@@ -1,0 +1,151 @@
+[debug] [2026-07-16T09:53:54.841Z] ----------------------------------------------------------------------
+[debug] [2026-07-16T09:53:54.844Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\thisi\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-07-16T09:53:54.844Z] CLI Version:   15.24.0
+[debug] [2026-07-16T09:53:54.845Z] Platform:      win32
+[debug] [2026-07-16T09:53:54.845Z] Node Version:  v22.17.0
+[debug] [2026-07-16T09:53:54.845Z] Detected Agent: claude-code_2-1-211_agent
+[debug] [2026-07-16T09:53:54.845Z] Time:          Thu Jul 16 2026 15:23:54 GMT+0530 (India Standard Time)
+[debug] [2026-07-16T09:53:54.845Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-07-16T09:53:57.800Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-07-16T09:53:57.800Z] > authorizing via signed-in user (hikemypanache@gmail.com)
+[debug] [2026-07-16T09:53:57.800Z] [iam] checking project smtpblast-web for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-07-16T09:53:57.829Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:53:57.829Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:53:57.830Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions [none]
+[debug] [2026-07-16T09:53:57.831Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions  x-goog-user-project=smtpblast-web
+[debug] [2026-07-16T09:53:57.831Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-07-16T09:53:59.413Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions 200
+[debug] [2026-07-16T09:53:59.413Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-07-16T09:53:59.414Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:53:59.414Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:53:59.414Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web [none]
+[debug] [2026-07-16T09:54:00.196Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web 200
+[debug] [2026-07-16T09:54:00.197Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web {"projectId":"smtpblast-web","projectNumber":"607768904912","displayName":"smtpblast-web","name":"projects/smtpblast-web","resources":{"hostingSite":"smtpblast-web"},"state":"ACTIVE","labels":{"firebase":"enabled"},"etag":"1_17f53112-2ee0-4323-b015-a86ee99abc81"}
+[debug] [2026-07-16T09:54:04.337Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:04.337Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:04.337Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites pageToken=&pageSize=10
+[debug] [2026-07-16T09:54:05.869Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites 200
+[debug] [2026-07-16T09:54:05.869Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites {"sites":[{"name":"projects/smtpblast-web/sites/smtpblast-web","defaultUrl":"https://smtpblast-web.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2026-07-16T09:54:05.869Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:05.870Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:05.870Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites 
+[debug] [2026-07-16T09:54:06.810Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites 200
+[debug] [2026-07-16T09:54:06.811Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites {"sites":[{"name":"projects/smtpblast-web/sites/smtpblast-web","defaultUrl":"https://smtpblast-web.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2026-07-16T09:54:06.811Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:06.811Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:06.811Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web/webApps/-/config [none]
+[debug] [2026-07-16T09:54:08.875Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web/webApps/-/config 200
+[debug] [2026-07-16T09:54:08.875Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web/webApps/-/config {"projectId":"smtpblast-web","appId":"1:607768904912:web:060a0b67ad55f773780ad5","storageBucket":"smtpblast-web.firebasestorage.app","apiKey":"AIzaSyAPREv0sxoT0uaeRhCNmyFIju67FuGJ9RE","authDomain":"smtpblast-web.firebaseapp.com","messagingSenderId":"607768904912","measurementId":"G-7R54B7DDE3","projectNumber":"607768904912","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-07-16T09:54:17.380Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:17.380Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:54:17.380Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites/smtpblast-web [none]
+[debug] [2026-07-16T09:54:18.788Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites/smtpblast-web 200
+[debug] [2026-07-16T09:54:18.788Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites/smtpblast-web {"name":"projects/smtpblast-web/sites/smtpblast-web","defaultUrl":"https://smtpblast-web.web.app","type":"DEFAULT_SITE"}
+[info]   ▲ Next.js 14.2.35
+
+[info]   - Environments: .env.local
+
+
+[info]    Creating an optimized production build ...
+
+[info] Failed to compile.
+
+
+[info] Error: EISDIR: illegal operation on a directory, readlink 'E:\Shivam_11222809_Backup\Smtpblast.com\node_modules\next\dist\pages\_app.js'
+
+
+[info] uncaughtException [Error: EPERM: operation not permitted, open 'E:\Shivam_11222809_Backup\Smtpblast.com\.next\trace'] {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'open',
+  path: 'E:\\Shivam_11222809_Backup\\Smtpblast.com\\.next\\trace'
+}
+
+[debug] [2026-07-16T09:54:36.539Z] Error: ENOENT: no such file or directory, open 'E:\Shivam_11222809_Backup\Smtpblast.com\.next\server\middleware-manifest.json'
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-07-16T09:55:36.076Z] ----------------------------------------------------------------------
+[debug] [2026-07-16T09:55:36.079Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\thisi\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only hosting
+[debug] [2026-07-16T09:55:36.079Z] CLI Version:   15.24.0
+[debug] [2026-07-16T09:55:36.079Z] Platform:      win32
+[debug] [2026-07-16T09:55:36.079Z] Node Version:  v22.17.0
+[debug] [2026-07-16T09:55:36.080Z] Detected Agent: claude-code_2-1-211_agent
+[debug] [2026-07-16T09:55:36.080Z] Time:          Thu Jul 16 2026 15:25:36 GMT+0530 (India Standard Time)
+[debug] [2026-07-16T09:55:36.080Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-07-16T09:55:38.671Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-07-16T09:55:38.672Z] > authorizing via signed-in user (hikemypanache@gmail.com)
+[debug] [2026-07-16T09:55:38.672Z] [iam] checking project smtpblast-web for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2026-07-16T09:55:38.683Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:38.683Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:38.684Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions [none]
+[debug] [2026-07-16T09:55:38.684Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions  x-goog-user-project=smtpblast-web
+[debug] [2026-07-16T09:55:38.684Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-07-16T09:55:40.160Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions 200
+[debug] [2026-07-16T09:55:40.160Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/smtpblast-web:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2026-07-16T09:55:40.161Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:40.161Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:40.161Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web [none]
+[debug] [2026-07-16T09:55:40.591Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web 200
+[debug] [2026-07-16T09:55:40.591Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web {"projectId":"smtpblast-web","projectNumber":"607768904912","displayName":"smtpblast-web","name":"projects/smtpblast-web","resources":{"hostingSite":"smtpblast-web"},"state":"ACTIVE","labels":{"firebase":"enabled"},"etag":"1_17f53112-2ee0-4323-b015-a86ee99abc81"}
+[debug] [2026-07-16T09:55:43.624Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:43.625Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:43.625Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites pageToken=&pageSize=10
+[debug] [2026-07-16T09:55:45.008Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites 200
+[debug] [2026-07-16T09:55:45.008Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites {"sites":[{"name":"projects/smtpblast-web/sites/smtpblast-web","defaultUrl":"https://smtpblast-web.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2026-07-16T09:55:45.008Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:45.009Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:45.009Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites 
+[debug] [2026-07-16T09:55:45.836Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites 200
+[debug] [2026-07-16T09:55:45.837Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites {"sites":[{"name":"projects/smtpblast-web/sites/smtpblast-web","defaultUrl":"https://smtpblast-web.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2026-07-16T09:55:45.837Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:45.837Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:45.837Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web/webApps/-/config [none]
+[debug] [2026-07-16T09:55:47.051Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web/webApps/-/config 200
+[debug] [2026-07-16T09:55:47.051Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/smtpblast-web/webApps/-/config {"projectId":"smtpblast-web","appId":"1:607768904912:web:060a0b67ad55f773780ad5","storageBucket":"smtpblast-web.firebasestorage.app","apiKey":"AIzaSyAPREv0sxoT0uaeRhCNmyFIju67FuGJ9RE","authDomain":"smtpblast-web.firebaseapp.com","messagingSenderId":"607768904912","measurementId":"G-7R54B7DDE3","projectNumber":"607768904912","version":"2"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2026-07-16T09:55:55.084Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:55.084Z] Checked if tokens are valid: true, expires at: 1784197426331
+[debug] [2026-07-16T09:55:55.084Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites/smtpblast-web [none]
+[debug] [2026-07-16T09:55:56.338Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites/smtpblast-web 200
+[debug] [2026-07-16T09:55:56.338Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/smtpblast-web/sites/smtpblast-web {"name":"projects/smtpblast-web/sites/smtpblast-web","defaultUrl":"https://smtpblast-web.web.app","type":"DEFAULT_SITE"}
+[info]   ▲ Next.js 14.2.35
+
+[info]   - Environments: .env.local
+
+
+[info]    Creating an optimized production build ...
+
+[info] Failed to compile.
+
+
+[info] Error: EISDIR: illegal operation on a directory, readlink 'E:\Shivam_11222809_Backup\Smtpblast.com\node_modules\next\dist\pages\_app.js'
+
+
+[info] 
+
+[info] > Build failed because of webpack errors
+
+[debug] [2026-07-16T09:56:17.920Z] Error: ENOENT: no such file or directory, open 'E:\Shivam_11222809_Backup\Smtpblast.com\.next\server\middleware-manifest.json'
+[error] 
+[error] Error: An unexpected error has occurred.

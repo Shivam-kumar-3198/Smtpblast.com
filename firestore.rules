@@ -1,0 +1,110 @@
+rules_version = '2';
+
+// Security model:
+//  - leads: anyone can create (the public site's popup + lead forms write
+//    here anonymously), validated for shape/size/status server-side by
+//    isValidLead() below. Only admins can read, update, or delete — this
+//    is the boundary that actually matters, since it's what keeps the
+//    submitted contact details private.
+//  - admins: an explicit allowlist keyed by Firebase Auth uid. Managed
+//    manually via the Firebase console (Firestore > admins collection),
+//    never through the app — allow write: if false prevents any client,
+//    including a signed-in admin, from granting itself or anyone else
+//    access through the app's own code path.
+//  - Content collections (posts, pricingTiers, testimonials, faqItems,
+//    bentoFeatures, howItWorksSteps, services) are the opposite shape from
+//    leads: public marketing content, so read is open to everyone, but
+//    only admins can write. The strict per-field SEO/shape validation
+//    (meta title/description length, mandatory alt text, etc.) lives in
+//    the admin UI's Zod schema, not here — these writes are already
+//    admin-only (a trusted caller), so rules only need to gate *who* can
+//    write, not re-litigate every business rule the form already enforces.
+//  - posts specifically: drafts are only visible to admins; published
+//    posts are public. Everything else has no draft concept.
+//  - siteSettings: a single document, same public-read/admin-write shape.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasOnly([
+          'name', 'email', 'phone', 'company', 'planInterest',
+          'message', 'source', 'status', 'createdAt'
+        ]) &&
+        data.keys().hasAll(['name', 'email', 'source', 'status', 'createdAt']) &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+        data.email is string && data.email.size() <= 200 &&
+        data.email.matches('^[^@\\s]+@[^@\\s]+[.][^@\\s]+$') &&
+        data.source is string && data.source.size() <= 60 &&
+        data.status == 'new' &&
+        data.createdAt == request.time &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() <= 40)) &&
+        (!('company' in data) || (data.company is string && data.company.size() <= 160)) &&
+        (!('message' in data) || (data.message is string && data.message.size() <= 2000)) &&
+        (!('planInterest' in data) || (data.planInterest is string && data.planInterest.size() <= 40));
+    }
+
+    match /leads/{leadId} {
+      allow create: if isValidLead(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /posts/{postId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /pricingTiers/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /testimonials/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /faqItems/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /bentoFeatures/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /howItWorksSteps/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /services/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /siteSettings/main {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
