@@ -6,10 +6,13 @@ const nextConfig = {
   // This drive is exFAT (external "My Book"), which doesn't support the
   // symlink/reparse-point semantics Next's output file tracing (@vercel/nft)
   // relies on — it walks every module calling readlink() to build the trace,
-  // which throws EISDIR on plain files here. Only skip tracing on that local
-  // drive; Netlify's build filesystem is unaffected and its Next.js plugin
-  // needs the trace output to detect the build and wire up server functions.
-  outputFileTracing: Boolean(process.env.NETLIFY),
+  // which throws EISDIR on plain files here. Only skip tracing for local
+  // builds on this drive; every CI/deploy platform (Netlify, Vercel, ...)
+  // builds on a normal filesystem and needs the trace output to bundle each
+  // route's serverless function with the right dependencies — without it,
+  // dependency-heavy routes (e.g. the Tiptap-based blog editor) 500 at
+  // runtime on Vercel from missing modules that never got traced in.
+  outputFileTracing: Boolean(process.env.CI),
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
