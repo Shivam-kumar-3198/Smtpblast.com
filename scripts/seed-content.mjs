@@ -389,6 +389,8 @@ const services = [
     secondaryImageAlt: "Close-up of network cabling running into a server switch",
     heroBadgeIcon: "Rocket",
     heroBadgeLabel: "Live in 24 hours",
+    links: [],
+    faq: [],
   },
   {
     slug: "bulk-email",
@@ -422,6 +424,8 @@ const services = [
     secondaryImageAlt: "A laptop showing an email client on a desk",
     heroBadgeIcon: "Plug",
     heroBadgeLabel: "SMTP + API ready",
+    links: [],
+    faq: [],
   },
   {
     slug: "email-campaigns",
@@ -455,6 +459,8 @@ const services = [
     secondaryImageAlt: "A marketing team reviewing campaign requirements together",
     heroBadgeIcon: "ClipboardList",
     heroBadgeLabel: "Reviewed before you send",
+    links: [],
+    faq: [],
   },
   {
     slug: "email-marketing-reseller",
@@ -488,6 +494,8 @@ const services = [
     secondaryImageAlt: "A reseller and client team reviewing a plan together",
     heroBadgeIcon: "Users",
     heroBadgeLabel: "100% white-label",
+    links: [],
+    faq: [],
   },
   {
     slug: "email-marketing",
@@ -521,6 +529,8 @@ const services = [
     secondaryImageAlt: "A team collaborating on a laptop",
     heroBadgeIcon: "TrendingUp",
     heroBadgeLabel: "2-3 week warm-up",
+    links: [],
+    faq: [],
   },
 ];
 
@@ -762,6 +772,8 @@ async function seedPosts() {
       content: post.content,
       seo: post.seo,
       featuredImage: post.featuredImage,
+      links: [],
+      faq: [],
       status: "published",
       author: AUTHOR,
       createdAt: now,

@@ -39,13 +39,19 @@ service cloud.firestore {
           'name', 'email', 'phone', 'company', 'planInterest',
           'message', 'source', 'status', 'createdAt'
         ]) &&
-        data.keys().hasAll(['name', 'email', 'source', 'status', 'createdAt']) &&
+        data.keys().hasAll(['name', 'source', 'status', 'createdAt']) &&
         data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
-        data.email is string && data.email.size() <= 200 &&
-        data.email.matches('^[^@\\s]+@[^@\\s]+[.][^@\\s]+$') &&
         data.source is string && data.source.size() <= 60 &&
         data.status == 'new' &&
         data.createdAt == request.time &&
+        // Email is no longer mandatory — the site-wide popup only collects
+        // a mobile number — but every lead must have at least one of the
+        // two, so admins always have a way to reach them back.
+        (('email' in data) || ('phone' in data)) &&
+        (!('email' in data) || (
+          data.email is string && data.email.size() <= 200 &&
+          data.email.matches('^[^@\\s]+@[^@\\s]+[.][^@\\s]+$')
+        )) &&
         (!('phone' in data) || (data.phone is string && data.phone.size() <= 40)) &&
         (!('company' in data) || (data.company is string && data.company.size() <= 160)) &&
         (!('message' in data) || (data.message is string && data.message.size() <= 2000)) &&

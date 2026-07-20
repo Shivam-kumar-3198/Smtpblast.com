@@ -26,12 +26,21 @@ export function LeadPopup() {
   );
   const dialogRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
+  // First appearance is immediate; every reappearance after that (once
+  // the visitor closes it) waits the full 20s. A ref rather than state
+  // since flipping it must not itself trigger a re-render/effect re-run.
+  const hasShownOnce = useRef(false);
 
-  // Reappears every 20s of being closed — the 20s clock only runs while
-  // the popup is hidden, so it can't fire while already open.
+  // Opens immediately on first load, then reappears every 20s of being
+  // closed — the 20s clock only runs while the popup is hidden, so it
+  // can't fire while already open.
   useEffect(() => {
     if (submittedForGood || open) return;
-    const timer = setTimeout(() => setOpen(true), REAPPEAR_DELAY_MS);
+    const delay = hasShownOnce.current ? REAPPEAR_DELAY_MS : 0;
+    const timer = setTimeout(() => {
+      hasShownOnce.current = true;
+      setOpen(true);
+    }, delay);
     return () => clearTimeout(timer);
   }, [open, submittedForGood]);
 
@@ -65,8 +74,8 @@ export function LeadPopup() {
 
     const result = await submitLead({
       name: String(data.name ?? ""),
-      email: String(data.email ?? ""),
       phone: String(data.phone ?? ""),
+      message: String(data.message ?? ""),
       source: "popup",
       company_website: String(data.company_website ?? ""),
     });
@@ -119,7 +128,7 @@ export function LeadPopup() {
             </div>
             <p className="mt-4 text-base font-semibold text-ink-950">Request received</p>
             <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-              A deliverability engineer will reply to your email shortly.
+              A deliverability engineer will call you back shortly.
             </p>
           </div>
         ) : (
@@ -128,11 +137,10 @@ export function LeadPopup() {
               <Mail className="h-5 w-5" strokeWidth={1.5} />
             </span>
             <h2 id="lead-popup-title" className="mt-4 text-lg font-semibold tracking-tight text-ink-950">
-              Get a deliverability engineer&apos;s take
+              Talk to a deliverability expert
             </h2>
             <p className="mt-1.5 text-sm leading-relaxed text-slate-600">
-              Tell us where you&apos;re sending from and we&apos;ll reply with next steps —
-              no sales scripts.
+              Share your details and we&apos;ll get back to you shortly.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate={false}>
@@ -153,33 +161,32 @@ export function LeadPopup() {
                 />
               </div>
               <div>
-                <label htmlFor="popup-email" className={LABEL_CLASSES}>
-                  Work email
-                </label>
-                <input
-                  id="popup-email"
-                  name="email"
-                  type="email"
-                  required
-                  maxLength={200}
-                  autoComplete="email"
-                  inputMode="email"
-                  placeholder="ada@company.com"
-                  className={FIELD_CLASSES}
-                />
-              </div>
-              <div>
                 <label htmlFor="popup-phone" className={LABEL_CLASSES}>
-                  Phone <span className="font-normal text-slate-400">(optional)</span>
+                  Mobile number
                 </label>
                 <input
                   id="popup-phone"
                   name="phone"
                   type="tel"
+                  required
                   maxLength={40}
                   autoComplete="tel"
                   inputMode="tel"
+                  placeholder="+1 555 123 4567"
                   className={FIELD_CLASSES}
+                />
+              </div>
+              <div>
+                <label htmlFor="popup-message" className={LABEL_CLASSES}>
+                  Message <span className="font-normal text-slate-400">(optional)</span>
+                </label>
+                <textarea
+                  id="popup-message"
+                  name="message"
+                  rows={3}
+                  maxLength={2000}
+                  placeholder="What are you sending, and roughly how many emails per month?"
+                  className={`${FIELD_CLASSES} resize-y`}
                 />
               </div>
 

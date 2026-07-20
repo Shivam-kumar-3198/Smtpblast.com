@@ -120,6 +120,24 @@ export function blogPostingJsonLd(
   };
 }
 
+export function serviceJsonLd(
+  companyName: string,
+  service: { name: string; description: string; slug: string }
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.name,
+    description: service.description,
+    url: `${siteUrl}/services/${service.slug}`,
+    provider: {
+      "@type": "Organization",
+      name: companyName,
+      url: siteUrl,
+    },
+  };
+}
+
 export function breadcrumbJsonLd(
   items: { name: string; url: string }[]
 ) {

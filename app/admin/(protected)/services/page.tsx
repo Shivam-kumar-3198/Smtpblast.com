@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, X, ImagePlus } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Pencil,
+  ChevronUp,
+  ChevronDown,
+  X,
+  ImagePlus,
+  Link2,
+  ExternalLink,
+} from "lucide-react";
 import { createCollectionCrud } from "@/lib/collection-crud";
 
 interface ServiceIncludedItem {
@@ -14,6 +24,17 @@ interface ServiceFlowNode {
   icon: string;
   label: string;
   sublabel: string;
+}
+
+interface ServiceLink {
+  text: string;
+  url: string;
+  nofollow: boolean;
+}
+
+interface ServiceFaqItem {
+  question: string;
+  answer: string;
 }
 
 interface ServiceDoc {
@@ -34,6 +55,13 @@ interface ServiceDoc {
   secondaryImageAlt: string;
   heroBadgeIcon: string;
   heroBadgeLabel: string;
+  links: ServiceLink[];
+  faq: ServiceFaqItem[];
+}
+
+/** Internal vs external is inferred from the URL, same rule the blog editor uses. */
+function isInternalUrl(url: string): boolean {
+  return url.startsWith("/") || url.startsWith("#") || /smtpblast\.com/i.test(url);
 }
 
 type WithId<T> = T & { id: string; order: number };
@@ -56,6 +84,8 @@ const EMPTY: ServiceDoc = {
   secondaryImageAlt: "",
   heroBadgeIcon: "Rocket",
   heroBadgeLabel: "",
+  links: [],
+  faq: [],
 };
 
 const crud = createCollectionCrud<ServiceDoc>("services");
@@ -95,7 +125,7 @@ export default function AdminServicesPage() {
   }
 
   function openEdit(service: WithId<ServiceDoc>) {
-    setForm(service);
+    setForm({ ...EMPTY, ...service, links: service.links ?? [], faq: service.faq ?? [] });
     setImageUrlInputs({ primary: "", secondary: "" });
     setEditing(service);
   }
@@ -608,6 +638,187 @@ export default function AdminServicesPage() {
                   ))}
                 </div>
               </div>
+
+              {/* ---- SEO: links ---- */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-ink-950">
+                    SEO links (internal &amp; external)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        links: [...f.links, { text: "", url: "", nofollow: false }],
+                      }))
+                    }
+                    className="text-xs font-medium text-accent-600 hover:text-accent-700"
+                  >
+                    + Add
+                  </button>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Internal vs. external is detected automatically from the URL. Toggle
+                  Nofollow off for links you want to pass authority to (do-follow), on for
+                  links you don&apos;t.
+                </p>
+                <div className="mt-1.5 space-y-2">
+                  {form.links.map((link, i) => {
+                    const internal = isInternalUrl(link.url);
+                    return (
+                      <div key={i} className="rounded-lg border border-slate-200 p-2.5">
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="text"
+                            value={link.text}
+                            onChange={(e) =>
+                              setForm((f) => ({
+                                ...f,
+                                links: f.links.map((l, idx) =>
+                                  idx === i ? { ...l, text: e.target.value } : l
+                                ),
+                              }))
+                            }
+                            placeholder="Anchor text"
+                            className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((f) => ({
+                                ...f,
+                                links: f.links.filter((_, idx) => idx !== i),
+                              }))
+                            }
+                            aria-label="Remove"
+                            className="shrink-0 rounded-full p-1 text-slate-400 hover:bg-danger-50 hover:text-danger-600"
+                          >
+                            <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={link.url}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              links: f.links.map((l, idx) =>
+                                idx === i ? { ...l, url: e.target.value } : l
+                              ),
+                            }))
+                          }
+                          placeholder="https:// or /internal-path"
+                          className="mt-1.5 w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                        />
+                        <div className="mt-1.5 flex items-center justify-between">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                            {internal ? (
+                              <>
+                                <Link2 className="h-3 w-3" strokeWidth={1.75} />
+                                Internal
+                              </>
+                            ) : (
+                              <>
+                                <ExternalLink className="h-3 w-3" strokeWidth={1.75} />
+                                External
+                              </>
+                            )}
+                          </span>
+                          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                            <input
+                              type="checkbox"
+                              checked={link.nofollow}
+                              onChange={(e) =>
+                                setForm((f) => ({
+                                  ...f,
+                                  links: f.links.map((l, idx) =>
+                                    idx === i ? { ...l, nofollow: e.target.checked } : l
+                                  ),
+                                }))
+                              }
+                              className="h-3.5 w-3.5 rounded border-slate-300 text-accent-600 focus:ring-accent-600/30"
+                            />
+                            Nofollow
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ---- SEO: FAQ ---- */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-ink-950">
+                    FAQ (this page only — also feeds FAQ schema)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        faq: [...f.faq, { question: "", answer: "" }],
+                      }))
+                    }
+                    className="text-xs font-medium text-accent-600 hover:text-accent-700"
+                  >
+                    + Add
+                  </button>
+                </div>
+                <div className="mt-1.5 space-y-2">
+                  {form.faq.map((item, i) => (
+                    <div key={i} className="rounded-lg border border-slate-200 p-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={item.question}
+                          onChange={(e) =>
+                            setForm((f) => ({
+                              ...f,
+                              faq: f.faq.map((q, idx) =>
+                                idx === i ? { ...q, question: e.target.value } : q
+                              ),
+                            }))
+                          }
+                          placeholder="Question"
+                          className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((f) => ({ ...f, faq: f.faq.filter((_, idx) => idx !== i) }))
+                          }
+                          aria-label="Remove"
+                          className="shrink-0 rounded-full p-1 text-slate-400 hover:bg-danger-50 hover:text-danger-600"
+                        >
+                          <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        </button>
+                      </div>
+                      <textarea
+                        rows={2}
+                        value={item.answer}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            faq: f.faq.map((q, idx) =>
+                              idx === i ? { ...q, answer: e.target.value } : q
+                            ),
+                          }))
+                        }
+                        placeholder="Answer"
+                        className="mt-1.5 w-full resize-y rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p className="rounded-lg bg-surface-50 px-3 py-2 text-[11px] text-slate-400">
+                Schema markup (Service + FAQ structured data) is generated automatically from
+                this content — nothing to fill in.
+              </p>
             </div>
 
             <button

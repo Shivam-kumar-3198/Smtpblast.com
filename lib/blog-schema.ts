@@ -25,6 +25,17 @@ export const featuredImageSchema = z.object({
   altText: z.string().trim().min(1, "Featured image alt text is required"),
 });
 
+export const postLinkSchema = z.object({
+  text: z.string().trim().default(""),
+  url: z.string().trim().default(""),
+  nofollow: z.boolean().default(false),
+});
+
+export const postFaqItemSchema = z.object({
+  question: z.string().trim().default(""),
+  answer: z.string().trim().default(""),
+});
+
 export const seoSchema = z.object({
   metaTitle: z
     .string()
@@ -55,6 +66,8 @@ export const blogPostSchema = z.object({
   content: tiptapDocSchema,
   seo: seoSchema,
   featuredImage: featuredImageSchema,
+  links: z.array(postLinkSchema).default([]),
+  faq: z.array(postFaqItemSchema).default([]),
   status: z.enum(["draft", "published"]),
   author: z.string().trim().min(1, "Author is required").max(120),
 });
@@ -87,6 +100,8 @@ export const blogDraftSchema = z.object({
     height: z.number().int().nonnegative().default(0),
     altText: z.string().trim().default(""),
   }),
+  links: z.array(postLinkSchema).default([]),
+  faq: z.array(postFaqItemSchema).default([]),
   status: z.enum(["draft", "published"]),
   author: z.string().trim().min(1, "Author is required").max(120),
 });
@@ -101,4 +116,22 @@ export function slugify(title: string): string {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+/**
+ * Sanitizes a slug field's raw value while the user is still typing.
+ * Unlike slugify(), it never strips a trailing hyphen — that's the
+ * character the user just pressed, mid-word (e.g. "hello-" while
+ * typing toward "hello-world"). Stripping it there would delete the
+ * hyphen the instant it's typed, making it impossible to type one at
+ * all in a controlled input. Full normalization (dropping stray
+ * leading/trailing hyphens) happens separately, on blur.
+ */
+export function slugifyLive(value: string): string {
+  return value
+    .toLowerCase()
+    .trimStart()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-{2,}/g, "-");
 }

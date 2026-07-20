@@ -20,6 +20,17 @@ import type { BlogDraftInput } from "./blog-schema";
 
 export type PostStatus = "draft" | "published";
 
+export interface PostLink {
+  text: string;
+  url: string;
+  nofollow: boolean;
+}
+
+export interface PostFaqItem {
+  question: string;
+  answer: string;
+}
+
 export interface PostRecord {
   id: string;
   title: string;
@@ -37,6 +48,8 @@ export interface PostRecord {
     height: number;
     altText: string;
   };
+  links: PostLink[];
+  faq: PostFaqItem[];
   status: PostStatus;
   author: string;
   createdAt: Date | null;
@@ -73,6 +86,8 @@ function fromSnapshot(id: string, data: Record<string, unknown>): PostRecord {
       height: Number(imgData.height ?? 0),
       altText: String(imgData.altText ?? ""),
     },
+    links: Array.isArray(data.links) ? (data.links as PostLink[]) : [],
+    faq: Array.isArray(data.faq) ? (data.faq as PostFaqItem[]) : [],
     status: (data.status as PostStatus) ?? "draft",
     author: String(data.author ?? ""),
     createdAt: toDate(data.createdAt),
@@ -131,6 +146,8 @@ const FALLBACK_POSTS: PostRecord[] = [
         "In practice: SPF alone stops naive spoofing, DKIM proves the message wasn't altered in transit, and DMARC is what makes both of them enforceable instead of advisory. All three configured and passing is table stakes for inbox placement on Gmail, Outlook, and Yahoo today."
       )
     ),
+    links: [],
+    faq: [],
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-05"),
@@ -170,6 +187,8 @@ const FALLBACK_POSTS: PostRecord[] = [
         "The schedule matters as much as the ramp itself: sending inconsistently (a burst one day, silence for a week, another burst) reads as unpredictable, and unpredictable sending patterns are one of the signals reputation systems weight most heavily. A managed warm-up schedule keeps the ramp both steady and complete."
       )
     ),
+    links: [],
+    faq: [],
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-08"),
@@ -209,6 +228,8 @@ const FALLBACK_POSTS: PostRecord[] = [
         "As a rough guide, a dedicated IP starts to make sense once you're sending consistent volume — enough that a managed warm-up schedule can ramp it properly, and enough that your own sending behavior is what determines your reputation rather than noise. Below that, a shared IP with a good existing reputation is often the safer choice."
       )
     ),
+    links: [],
+    faq: [],
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-12"),
@@ -251,6 +272,8 @@ const FALLBACK_POSTS: PostRecord[] = [
         "The pipeline order that actually helps: check bounces first (list problem), then complaints (content or targeting problem), then use engagement trends as a slower-moving confirmation rather than a daily read."
       )
     ),
+    links: [],
+    faq: [],
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-15"),
@@ -290,6 +313,8 @@ const FALLBACK_POSTS: PostRecord[] = [
         "The other lever that's easy to overlook: sending infrastructure that matches the volume. A dedicated IP or IP pool with proper rotation, sized for the campaign, keeps any single IP from absorbing a spike in complaints that a smaller setup would concentrate onto one reputation."
       )
     ),
+    links: [],
+    faq: [],
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-19"),
@@ -329,6 +354,8 @@ const FALLBACK_POSTS: PostRecord[] = [
         "The clients who ask about authentication setup and warm-up timelines before their first send are, in practice, the ones who have the fewest deliverability problems later. Setting that expectation early — that inbox placement is a setup process, not a switch you flip — saves a lot of after-the-fact troubleshooting."
       )
     ),
+    links: [],
+    faq: [],
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-22"),
@@ -344,6 +371,8 @@ function toFirestorePayload(input: BlogDraftInput) {
     content: sanitizeLinks(input.content as unknown as TiptapDoc),
     seo: input.seo,
     featuredImage: input.featuredImage,
+    links: input.links,
+    faq: input.faq,
     status: input.status,
     author: input.author,
   };

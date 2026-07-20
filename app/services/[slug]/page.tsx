@@ -20,6 +20,8 @@ import {
   LineChart,
   ClipboardList,
   TrendingUp,
+  Link2,
+  ExternalLink,
   type LucideIcon,
 } from "lucide-react";
 import Script from "next/script";
@@ -34,7 +36,16 @@ import { getServiceBySlug, listServices } from "@/lib/services-content";
 import { proofRows, proofFootnote } from "@/content/proof-strip";
 import { honestLimitation } from "@/components/marketing/HowItWorks";
 import { createCollectionCrud } from "@/lib/collection-crud";
-import { breadcrumbJsonLd, faqJsonLd } from "@/lib/schema";
+import { getSiteSettings } from "@/lib/site-settings-content";
+import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/schema";
+
+/** Internal vs external is inferred from the URL, same rule the blog editor uses. */
+function toInternalPath(url: string): string {
+  return url.replace(/^https?:\/\/(www\.)?smtpblast\.com/i, "") || "/";
+}
+function isInternalLink(url: string): boolean {
+  return url.startsWith("/") || url.startsWith("#") || /smtpblast\.com/i.test(url);
+}
 
 interface FaqDoc {
   question: string;
@@ -106,16 +117,16 @@ export default async function ServicePage({
   }
 
   const HeroIcon = ICON_MAP[service.icon] ?? Server;
-  const [allFaqs, howItWorksSteps, testimonials, allServices] = await Promise.all([
+  const [allFaqs, howItWorksSteps, testimonials, allServices, siteSettings] = await Promise.all([
     createCollectionCrud<FaqDoc>("faqItems").list(),
     createCollectionCrud<StepDoc>("howItWorksSteps").list(),
     createCollectionCrud<TestimonialDoc>("testimonials").list(),
     listServices(),
+    getSiteSettings(),
   ]);
-  // Per-service FAQ curation isn't wired to Firestore's auto-generated
-  // doc ids — show the first few site-wide FAQs instead of a curated
-  // subset, same as the homepage FAQ section.
-  const serviceFaqs = allFaqs.slice(0, 4);
+  // Prefer this service's own curated FAQ; fall back to the first few
+  // site-wide FAQs for services that haven't had one added yet.
+  const serviceFaqs = service.faq.length > 0 ? service.faq : allFaqs.slice(0, 4);
   const otherServices = allServices.filter((s) => s.slug !== service.slug).slice(0, 4);
 
   return (
@@ -399,7 +410,7 @@ export default async function ServicePage({
 
             <div className="mt-8 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-900/[0.08] shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
               {serviceFaqs.map((item, i) => (
-                <Reveal key={item.id} delay={i * 0.03}>
+                <Reveal key={i} delay={i * 0.03}>
                   <details className="group border-b border-slate-100 px-6 py-5 last:border-0 open:bg-surface-50/60">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-ink-950 marker:content-none focus-visible:outline-2 focus-visible:outline-accent-600">
                       <span className="text-sm font-medium sm:text-base">{item.question}</span>
@@ -415,6 +426,56 @@ export default async function ServicePage({
                 </Reveal>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* ================= Related links ================= */}
+        {service.links.length > 0 && (
+          <section className="mx-auto max-w-3xl px-6 pb-20">
+            <Reveal className="flex flex-col items-start gap-4">
+              <SectionEyebrow>Related links</SectionEyebrow>
+              <h2 className="text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
+                Learn more about {service.name.toLowerCase()}.
+              </h2>
+            </Reveal>
+
+            <ul className="mt-8 flex flex-wrap gap-3">
+              {service.links.map((link, i) => {
+                const internal = isInternalLink(link.url);
+                const LinkIcon = internal ? Link2 : ExternalLink;
+                const className =
+                  "inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-ink-800 ring-1 ring-slate-900/8 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-colors duration-200 ease-out hover:border-slate-300 hover:bg-slate-50";
+                return (
+                  <li key={i}>
+                    {internal ? (
+                      <Link
+                        href={toInternalPath(link.url)}
+                        rel={link.nofollow ? "nofollow" : undefined}
+                        className={className}
+                      >
+                        <LinkIcon className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                        {link.text}
+                      </Link>
+                    ) : link.nofollow ? (
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        className={className}
+                      >
+                        <LinkIcon className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                        {link.text}
+                      </a>
+                    ) : (
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className={className}>
+                        <LinkIcon className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                        {link.text}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
 
@@ -471,6 +532,13 @@ export default async function ServicePage({
               { name: service.name, url: `/services/${service.slug}` },
             ])
           ),
+        }}
+      />
+      <Script
+        id="service-service-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(serviceJsonLd(siteSettings.companyName, service)),
         }}
       />
       {serviceFaqs.length > 0 && (

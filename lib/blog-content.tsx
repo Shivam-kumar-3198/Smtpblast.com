@@ -58,14 +58,17 @@ export function buildToc(doc: TiptapDoc): { toc: TocEntry[]; headingIds: Map<Tip
   function visit(node: TiptapNode) {
     if (node.type === "heading") {
       const level = Number(node.attrs?.level ?? 2);
-      if (level === 2 || level === 3) {
+      // Editor level 1 ("H1" styling) renders as an <h2> on the page (see
+      // renderBlock below), so it belongs in the TOC as a level-2 entry too.
+      if (level === 1 || level === 2 || level === 3) {
         const text = nodeText(node).trim();
         if (text) {
           const base = slugify(text) || "section";
           const count = seen.get(base) ?? 0;
           seen.set(base, count + 1);
           const id = count === 0 ? base : `${base}-${count + 1}`;
-          toc.push({ id, text, level: level as 2 | 3 });
+          const tocLevel: 2 | 3 = level === 3 ? 3 : 2;
+          toc.push({ id, text, level: tocLevel });
           headingIds.set(node, id);
         }
       }
@@ -179,6 +182,20 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
       const level = Number(node.attrs?.level ?? 2);
       const id = headingIds?.get(node);
       const text = renderInline(node.content);
+      if (level === 1) {
+        // Styled as the largest heading in the post body, but emitted as
+        // an <h2> — the post title (rendered elsewhere) stays the page's
+        // only true <h1>.
+        return (
+          <h2
+            key={key}
+            id={id}
+            className="mt-10 scroll-mt-24 text-h3 font-semibold tracking-tight text-ink-950"
+          >
+            {text}
+          </h2>
+        );
+      }
       if (level === 2) {
         return (
           <h2

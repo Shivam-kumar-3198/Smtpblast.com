@@ -2,10 +2,16 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImagePlus, Loader2, X, Link2, ExternalLink } from "lucide-react";
 import { TiptapEditor } from "./TiptapEditor";
 import type { TiptapDoc } from "@/lib/blog-content";
-import { blogDraftSchema, blogPostSchema, slugify, type BlogDraftInput } from "@/lib/blog-schema";
+import {
+  blogDraftSchema,
+  blogPostSchema,
+  slugify,
+  slugifyLive,
+  type BlogDraftInput,
+} from "@/lib/blog-schema";
 import { createPost, isSlugTaken, updatePost, type PostRecord } from "@/lib/blog";
 import { loadImageDimensions } from "@/lib/storage";
 
@@ -18,9 +24,16 @@ function emptyFormState(author: string): BlogDraftInput {
     content: EMPTY_DOC,
     seo: { metaTitle: "", metaDescription: "", focusKeywords: [], canonicalUrl: "" },
     featuredImage: { url: "", width: 0, height: 0, altText: "" },
+    links: [],
+    faq: [],
     status: "draft",
     author,
   };
+}
+
+/** Internal vs external is inferred from the URL, same rule the blog reader uses. */
+function isInternalUrl(url: string): boolean {
+  return url.startsWith("/") || url.startsWith("#") || /smtpblast\.com/i.test(url);
 }
 
 function CharCounter({ value, min, max }: { value: string; min: number; max: number }) {
@@ -57,6 +70,8 @@ export function BlogPostForm({
           content: initial.content,
           seo: initial.seo,
           featuredImage: initial.featuredImage,
+          links: initial.links ?? [],
+          faq: initial.faq ?? [],
           status: initial.status,
           author: initial.author,
         }
@@ -209,8 +224,9 @@ export function BlogPostForm({
             value={form.slug}
             onChange={(e) => {
               setSlugEditedManually(true);
-              setForm((f) => ({ ...f, slug: slugify(e.target.value) }));
+              setForm((f) => ({ ...f, slug: slugifyLive(e.target.value) }));
             }}
+            onBlur={() => setForm((f) => ({ ...f, slug: slugify(f.slug) }))}
             className="flex-1 border-0 bg-transparent p-0 text-sm text-ink-950 outline-none"
           />
         </div>
@@ -382,6 +398,176 @@ export function BlogPostForm({
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
             />
           </div>
+        </div>
+
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-900/8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-ink-950">
+              SEO links (internal &amp; external)
+            </h3>
+            <button
+              type="button"
+              onClick={() =>
+                setForm((f) => ({
+                  ...f,
+                  links: [...f.links, { text: "", url: "", nofollow: false }],
+                }))
+              }
+              className="text-xs font-medium text-accent-600 hover:text-accent-700"
+            >
+              + Add
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] text-slate-400">
+            Internal vs. external is detected automatically from the URL. Toggle Nofollow
+            off for links you want to pass authority to (do-follow), on for links you
+            don&apos;t.
+          </p>
+          <div className="mt-2 space-y-2">
+            {form.links.map((link, i) => {
+              const internal = isInternalUrl(link.url);
+              return (
+                <div key={i} className="rounded-lg border border-slate-200 p-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={link.text}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          links: f.links.map((l, idx) =>
+                            idx === i ? { ...l, text: e.target.value } : l
+                          ),
+                        }))
+                      }
+                      placeholder="Anchor text"
+                      className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({ ...f, links: f.links.filter((_, idx) => idx !== i) }))
+                      }
+                      aria-label="Remove"
+                      className="shrink-0 rounded-full p-1 text-slate-400 hover:bg-danger-50 hover:text-danger-600"
+                    >
+                      <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={link.url}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        links: f.links.map((l, idx) =>
+                          idx === i ? { ...l, url: e.target.value } : l
+                        ),
+                      }))
+                    }
+                    placeholder="https:// or /internal-path"
+                    className="mt-1.5 w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                  />
+                  <div className="mt-1.5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                      {internal ? (
+                        <>
+                          <Link2 className="h-3 w-3" strokeWidth={1.75} />
+                          Internal
+                        </>
+                      ) : (
+                        <>
+                          <ExternalLink className="h-3 w-3" strokeWidth={1.75} />
+                          External
+                        </>
+                      )}
+                    </span>
+                    <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                      <input
+                        type="checkbox"
+                        checked={link.nofollow}
+                        onChange={(e) =>
+                          setForm((f) => ({
+                            ...f,
+                            links: f.links.map((l, idx) =>
+                              idx === i ? { ...l, nofollow: e.target.checked } : l
+                            ),
+                          }))
+                        }
+                        className="h-3.5 w-3.5 rounded border-slate-300 text-accent-600 focus:ring-accent-600/30"
+                      />
+                      Nofollow
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-900/8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-ink-950">
+              FAQ (this post only — also feeds FAQ schema)
+            </h3>
+            <button
+              type="button"
+              onClick={() =>
+                setForm((f) => ({ ...f, faq: [...f.faq, { question: "", answer: "" }] }))
+              }
+              className="text-xs font-medium text-accent-600 hover:text-accent-700"
+            >
+              + Add
+            </button>
+          </div>
+          <div className="mt-2 space-y-2">
+            {form.faq.map((item, i) => (
+              <div key={i} className="rounded-lg border border-slate-200 p-2.5">
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="text"
+                    value={item.question}
+                    onChange={(e) =>
+                      setForm((f) => ({
+                        ...f,
+                        faq: f.faq.map((q, idx) =>
+                          idx === i ? { ...q, question: e.target.value } : q
+                        ),
+                      }))
+                    }
+                    placeholder="Question"
+                    className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({ ...f, faq: f.faq.filter((_, idx) => idx !== i) }))
+                    }
+                    aria-label="Remove"
+                    className="shrink-0 rounded-full p-1 text-slate-400 hover:bg-danger-50 hover:text-danger-600"
+                  >
+                    <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
+                </div>
+                <textarea
+                  rows={2}
+                  value={item.answer}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      faq: f.faq.map((q, idx) => (idx === i ? { ...q, answer: e.target.value } : q)),
+                    }))
+                  }
+                  placeholder="Answer"
+                  className="mt-1.5 w-full resize-y rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                />
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 rounded-lg bg-surface-50 px-3 py-2 text-[11px] text-slate-400">
+            Schema markup (BlogPosting + FAQ structured data) is generated automatically
+            from this post&apos;s content — nothing to fill in.
+          </p>
         </div>
 
         <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-900/8">

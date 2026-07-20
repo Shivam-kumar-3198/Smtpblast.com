@@ -18,7 +18,10 @@ export type LeadStatus = "new" | "contacted" | "closed";
 export interface LeadRecord {
   id: string;
   name: string;
-  email: string;
+  // Optional: the site-wide popup only collects a mobile number, not an
+  // email. Every lead still has at least one of email/phone — enforced by
+  // leadSchema's refine and mirrored in firestore.rules' isValidLead().
+  email?: string;
   phone?: string;
   company?: string;
   planInterest?: string;
@@ -74,7 +77,7 @@ export async function submitLead(input: LeadInput): Promise<SubmitResult> {
   try {
     await addDoc(collection(db, LEADS_COLLECTION), {
       name,
-      email,
+      ...(email ? { email } : {}),
       ...(phone ? { phone } : {}),
       ...(company ? { company } : {}),
       ...(planInterest ? { planInterest } : {}),
@@ -109,7 +112,7 @@ export function subscribeToLeads(
         return {
           id: docSnap.id,
           name: data.name,
-          email: data.email,
+          email: data.email || undefined,
           phone: data.phone || undefined,
           company: data.company || undefined,
           planInterest: data.planInterest || undefined,

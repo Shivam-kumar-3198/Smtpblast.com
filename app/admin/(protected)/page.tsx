@@ -68,7 +68,7 @@ function toCsv(leads: LeadRecord[]): string {
   ];
   const rows = leads.map((lead) => [
     lead.name,
-    lead.email,
+    lead.email ?? "",
     lead.phone ?? "",
     lead.company ?? "",
     lead.planInterest ?? "",
@@ -114,7 +114,8 @@ export default function AdminDashboardPage() {
       if (!term) return true;
       return (
         lead.name.toLowerCase().includes(term) ||
-        lead.email.toLowerCase().includes(term) ||
+        (lead.email ?? "").toLowerCase().includes(term) ||
+        (lead.phone ?? "").toLowerCase().includes(term) ||
         (lead.company ?? "").toLowerCase().includes(term)
       );
     });
@@ -205,7 +206,7 @@ export default function AdminDashboardPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name, email, company…"
+              placeholder="Search name, email, phone, company…"
               className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-ink-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10 sm:w-64"
             />
           </div>
@@ -266,13 +267,24 @@ export default function AdminDashboardPage() {
               <tr key={lead.id} className="border-b border-slate-100 align-top last:border-0">
                 <td className="px-5 py-4">
                   <div className="text-sm font-medium text-ink-950">{lead.name}</div>
-                  <a
-                    href={`mailto:${lead.email}`}
-                    className="mt-0.5 block text-sm text-accent-600 hover:underline"
-                  >
-                    {lead.email}
-                  </a>
-                  {lead.phone && <div className="mt-0.5 text-sm text-slate-500">{lead.phone}</div>}
+                  {lead.email && (
+                    <a
+                      href={`mailto:${lead.email}`}
+                      className="mt-0.5 block text-sm text-accent-600 hover:underline"
+                    >
+                      {lead.email}
+                    </a>
+                  )}
+                  {lead.phone && (
+                    <a
+                      href={`tel:${lead.phone}`}
+                      className={`mt-0.5 block text-sm hover:underline ${
+                        lead.email ? "text-slate-500" : "text-accent-600"
+                      }`}
+                    >
+                      {lead.phone}
+                    </a>
+                  )}
                   {lead.company && (
                     <div className="mt-0.5 text-xs text-slate-400">{lead.company}</div>
                   )}

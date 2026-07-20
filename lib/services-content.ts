@@ -13,6 +13,17 @@ export interface ServiceFlowNode {
   sublabel: string;
 }
 
+export interface ServiceLink {
+  text: string;
+  url: string;
+  nofollow: boolean;
+}
+
+export interface ServiceFaqItem {
+  question: string;
+  answer: string;
+}
+
 export interface ServiceRecord {
   id: string;
   slug: string;
@@ -32,6 +43,8 @@ export interface ServiceRecord {
   secondaryImageAlt: string;
   heroBadgeIcon: string;
   heroBadgeLabel: string;
+  links: ServiceLink[];
+  faq: ServiceFaqItem[];
 }
 
 const SERVICES_COLLECTION = "services";
@@ -78,6 +91,8 @@ const FALLBACK_SERVICES: ServiceRecord[] = [
     secondaryImageAlt: "Close-up of network cabling running into a server switch",
     heroBadgeIcon: "Rocket",
     heroBadgeLabel: "Live in 24 hours",
+    links: [],
+    faq: [],
   },
   {
     id: "fallback-bulk-email",
@@ -112,6 +127,8 @@ const FALLBACK_SERVICES: ServiceRecord[] = [
     secondaryImageAlt: "A laptop showing an email client on a desk",
     heroBadgeIcon: "Plug",
     heroBadgeLabel: "SMTP + API ready",
+    links: [],
+    faq: [],
   },
   {
     id: "fallback-email-campaigns",
@@ -146,6 +163,8 @@ const FALLBACK_SERVICES: ServiceRecord[] = [
     secondaryImageAlt: "A marketing team reviewing campaign requirements together",
     heroBadgeIcon: "ClipboardList",
     heroBadgeLabel: "Reviewed before you send",
+    links: [],
+    faq: [],
   },
   {
     id: "fallback-email-marketing-reseller",
@@ -180,6 +199,8 @@ const FALLBACK_SERVICES: ServiceRecord[] = [
     secondaryImageAlt: "A reseller and client team reviewing a plan together",
     heroBadgeIcon: "Users",
     heroBadgeLabel: "100% white-label",
+    links: [],
+    faq: [],
   },
   {
     id: "fallback-email-marketing",
@@ -214,6 +235,8 @@ const FALLBACK_SERVICES: ServiceRecord[] = [
     secondaryImageAlt: "A team collaborating on a laptop",
     heroBadgeIcon: "TrendingUp",
     heroBadgeLabel: "2-3 week warm-up",
+    links: [],
+    faq: [],
   },
 ];
 
@@ -237,6 +260,8 @@ function fromDoc(id: string, data: Record<string, unknown>): ServiceRecord {
     secondaryImageAlt: String(data.secondaryImageAlt ?? ""),
     heroBadgeIcon: String(data.heroBadgeIcon ?? ""),
     heroBadgeLabel: String(data.heroBadgeLabel ?? ""),
+    links: Array.isArray(data.links) ? (data.links as ServiceLink[]) : [],
+    faq: Array.isArray(data.faq) ? (data.faq as ServiceFaqItem[]) : [],
   };
 }
 

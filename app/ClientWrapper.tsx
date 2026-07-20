@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { PageTransition } from "./PageTransition";
+import { NavigationProgress } from "./NavigationProgress";
 import { WhatsAppButton } from "@/components/marketing/WhatsAppButton";
 import { LeadPopup } from "@/components/marketing/LeadPopup";
 
@@ -63,6 +64,7 @@ export default function ClientWrapper({
 
   return (
     <>
+      <NavigationProgress />
       <PageTransition>{children}</PageTransition>
       {!isAdminRoute && <WhatsAppButton href={whatsappHref} />}
       {showPopup && <LeadPopup />}

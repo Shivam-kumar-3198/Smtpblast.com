@@ -3,13 +3,21 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown, Link2, ExternalLink } from "lucide-react";
 import { Nav } from "@/components/marketing/Nav";
 import { Footer } from "@/components/marketing/Footer";
 import { getPublishedPostBySlug, listPublishedPosts } from "@/lib/blog";
 import { buildToc, estimateReadTime, renderTiptapDoc, type TiptapDoc } from "@/lib/blog-content";
-import { blogPostingJsonLd, breadcrumbJsonLd } from "@/lib/schema";
+import { blogPostingJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings-content";
+
+/** Internal vs external is inferred from the URL, same rule the blog editor uses. */
+function toInternalPath(url: string): string {
+  return url.replace(/^https?:\/\/(www\.)?smtpblast\.com/i, "") || "/";
+}
+function isInternalLink(url: string): boolean {
+  return url.startsWith("/") || url.startsWith("#") || /smtpblast\.com/i.test(url);
+}
 
 // See app/blog/page.tsx — same reasoning, otherwise a published edit or a
 // slug fix in the admin never reaches this page without a full redeploy.
@@ -213,6 +221,83 @@ export default async function BlogPostPage({
                   </ul>
                 </div>
               )}
+
+              {post.faq.length > 0 && (
+                <div className="mt-16 border-t border-slate-100 pt-10">
+                  <h2 className="text-small font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    FAQ
+                  </h2>
+                  <div className="mt-5 overflow-hidden rounded-2xl bg-white ring-1 ring-slate-900/8 shadow-[0_2px_8px_rgba(15,23,42,0.04)]">
+                    {post.faq.map((item, i) => (
+                      <details
+                        key={i}
+                        className="group border-b border-slate-100 px-6 py-5 last:border-0 open:bg-surface-50/60"
+                      >
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-ink-950 marker:content-none focus-visible:outline-2 focus-visible:outline-accent-600">
+                          <span className="text-sm font-medium sm:text-base">{item.question}</span>
+                          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-colors group-open:bg-accent-600 group-open:text-white">
+                            <ChevronDown
+                              className="h-4 w-4 transition-transform duration-300 ease-out group-open:rotate-180"
+                              strokeWidth={1.5}
+                            />
+                          </span>
+                        </summary>
+                        <p className="mt-3 text-sm leading-relaxed text-slate-600">{item.answer}</p>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {post.links.length > 0 && (
+                <div className="mt-16 border-t border-slate-100 pt-10">
+                  <h2 className="text-small font-semibold uppercase tracking-[0.14em] text-slate-400">
+                    Related links
+                  </h2>
+                  <ul className="mt-5 flex flex-wrap gap-3">
+                    {post.links.map((link, i) => {
+                      const internal = isInternalLink(link.url);
+                      const LinkIcon = internal ? Link2 : ExternalLink;
+                      const className =
+                        "inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-ink-800 ring-1 ring-slate-900/8 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-colors duration-200 ease-out hover:border-slate-300 hover:bg-slate-50";
+                      return (
+                        <li key={i}>
+                          {internal ? (
+                            <Link
+                              href={toInternalPath(link.url)}
+                              rel={link.nofollow ? "nofollow" : undefined}
+                              className={className}
+                            >
+                              <LinkIcon className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                              {link.text}
+                            </Link>
+                          ) : link.nofollow ? (
+                            <a
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer nofollow"
+                              className={className}
+                            >
+                              <LinkIcon className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                              {link.text}
+                            </a>
+                          ) : (
+                            <a
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={className}
+                            >
+                              <LinkIcon className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                              {link.text}
+                            </a>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
             </article>
 
             {toc.length > 0 && (
@@ -271,6 +356,13 @@ export default async function BlogPostPage({
           ),
         }}
       />
+      {post.faq.length > 0 && (
+        <Script
+          id="blog-post-faq-jsonld"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(post.faq)) }}
+        />
+      )}
     </>
   );
 }

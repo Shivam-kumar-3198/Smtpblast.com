@@ -1,10 +1,27 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Menu, X, ArrowUpRight, Send } from "lucide-react";
-import { navItems } from "@/content/nav";
+import { navItems as staticNavItems } from "@/content/nav";
+import { createCollectionCrud } from "@/lib/collection-crud";
+
+/**
+ * The "Solutions" dropdown mirrors the live /admin/services (Solutions)
+ * collection so edits made there — add, edit, delete, reorder — show up
+ * here immediately, instead of the dropdown drifting out of sync with a
+ * hand-maintained copy. Falls back to the static content/nav.ts entries
+ * (used for SSR and the very first paint, and to fail soft if the
+ * collection is empty or unreachable) so the menu never disappears.
+ */
+interface LiveServiceEntry {
+  slug: string;
+  name: string;
+  summary: string;
+}
+
+const servicesCrud = createCollectionCrud<LiveServiceEntry>("services");
 
 /* ------------------------------------------------------------------ */
 /*  SMTPblast — "Paper & Transit" navigation  (v2)                     */
@@ -25,8 +42,34 @@ export function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [liveServices, setLiveServices] = useState<LiveServiceEntry[] | null>(null);
   const navRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* ---------- live Solutions dropdown from /admin/services ---------- */
+  useEffect(() => {
+    const unsubscribe = servicesCrud.subscribe(
+      (data) => setLiveServices(data),
+      () => setLiveServices(null)
+    );
+    return () => unsubscribe();
+  }, []);
+
+  const navItems = useMemo(() => {
+    if (!liveServices || liveServices.length === 0) return staticNavItems;
+    return staticNavItems.map((item) =>
+      item.label === "Solutions"
+        ? {
+            ...item,
+            dropdown: liveServices.map((s) => ({
+              label: s.name,
+              description: s.summary,
+              href: `/services/${s.slug}`,
+            })),
+          }
+        : item
+    );
+  }, [liveServices]);
 
   /* ---------- scroll state (rAF-throttled, no jitter) ---------- */
   useEffect(() => {

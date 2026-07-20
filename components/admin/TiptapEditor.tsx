@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
   Undo2,
   Redo2,
+  Heading1,
   Heading2,
   Heading3,
 } from "lucide-react";
@@ -164,7 +165,16 @@ function Toolbar({ editor }: { editor: Editor }) {
 
       <span aria-hidden className="mx-1 h-5 w-px bg-slate-200" />
 
-      {/* H1 is intentionally absent — the post title is the page's only h1. */}
+      {/* Level 1 renders as a large styled heading, but is emitted as an
+          <h2> on the live page (see renderBlock in lib/blog-content.tsx) —
+          the post title stays the page's only true <h1>. */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        active={editor.isActive("heading", { level: 1 })}
+        label="Heading 1"
+      >
+        <Heading1 className="h-4 w-4" strokeWidth={1.75} />
+      </ToolbarButton>
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         active={editor.isActive("heading", { level: 2 })}
@@ -241,7 +251,7 @@ export function TiptapEditor({
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3, 4] } }),
+      StarterKit.configure({ heading: { levels: [1, 2, 3, 4] } }),
       TiptapImage.configure({ inline: false }),
       TiptapLink.configure({ openOnClick: false, autolink: true }),
       Placeholder.configure({ placeholder: "Write the post…" }),
