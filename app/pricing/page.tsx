@@ -9,6 +9,12 @@ import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { PricingTable } from "@/components/marketing/PricingTable";
 import { listPricingTiers } from "@/lib/pricing-content";
 
+// Same reasoning as app/blog/page.tsx: without this, listPricingTiers()
+// only runs once at build time and an admin's price edit never reaches
+// this page until the next deploy — even though the homepage's pricing
+// section (a live Firestore subscription) already shows it instantly.
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Pricing",
   description:
@@ -62,7 +68,7 @@ export default async function PricingPage() {
               <p className="max-w-xl text-balance text-body-lg leading-relaxed text-slate-600">
                 Every tier lists a different sending rate, IP count, and support SLA — from a
                 7-day trial to a multi-IP cluster. Prices shown in your own currency, wherever
-                you're sending from.
+                you&apos;re sending from.
               </p>
 
               <div className="mt-2 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">

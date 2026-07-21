@@ -88,6 +88,12 @@ export async function generateStaticParams() {
   return services.map((service) => ({ slug: service.slug }));
 }
 
+// Same reasoning as app/blog/[slug]/page.tsx: these are statically
+// generated at build time from the slugs above, so without a revalidate
+// window an admin's edit to a service's content never reaches the live
+// page until the next deploy.
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {

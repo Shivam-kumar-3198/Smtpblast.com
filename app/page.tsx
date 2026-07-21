@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Script from "next/script";
 import { Nav } from "@/components/marketing/Nav";
 import { Hero } from "@/components/marketing/Hero";
@@ -13,6 +14,16 @@ import { Footer } from "@/components/marketing/Footer";
 import { faqJsonLd, softwareApplicationJsonLd } from "@/lib/schema";
 import { createCollectionCrud } from "@/lib/collection-crud";
 import { getSiteSettings } from "@/lib/site-settings-content";
+
+// Same reasoning as app/blog/page.tsx: Firestore reads (bento features,
+// FAQ, pricing, testimonials, site settings) aren't visible to Next's
+// fetch-based cache heuristics, so without this the homepage renders once
+// at build time and admin edits never reach it until the next deploy.
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 interface FaqDoc {
   question: string;

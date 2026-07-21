@@ -7,6 +7,7 @@ import ClientWrapper from "./ClientWrapper";
 import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
 import { organizationJsonLd } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings-content";
+import { domain } from "@/content/site-settings";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   },
   description:
     "Dedicated SMTP servers with managed IP warm-up and SPF/DKIM/DMARC setup. Live in 24 hours, built for teams sending 100K-10M emails a month.",
-  metadataBase: new URL("https://smtpblast.com"),
+  metadataBase: new URL(`https://${domain}`),
   openGraph: {
     type: "website",
     siteName: "SMTPblast",

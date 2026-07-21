@@ -251,9 +251,6 @@ export async function Hero() {
                       <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
                       <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
                     </span>
-                    <span className="mx-auto flex items-center gap-2 rounded-md bg-slate-50 px-8 py-1 font-mono text-[0.72rem] text-slate-400">
-                      app.smtpblast.io/analytics
-                    </span>
                     <span aria-hidden className="w-[3.25rem]" />
                   </div>
 

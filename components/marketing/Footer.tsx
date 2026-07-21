@@ -59,82 +59,87 @@ export async function Footer() {
 
   return (
     <footer className="relative overflow-hidden bg-ink-950 text-slate-300">
-      {/* Soft radial glow anchoring the CTA corner — matches CtaBand */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-40 right-0 h-[480px] w-[480px] rounded-full bg-accent-500 opacity-[0.06] blur-[120px]"
-      />
-
-      <div className="relative mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
-        {/* ═════════ CTA — split cell with proof metrics ═════════ */}
-        <div className="grid border-b border-white/10 lg:grid-cols-[1.35fr_1fr]">
-          <div className="py-16 pr-0 lg:border-r lg:border-white/10 lg:pr-14">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-400">
-              next step
-            </p>
-            <h2 className="mt-4 max-w-xl text-[2rem] font-bold leading-[1.1] tracking-tight text-white sm:text-[2.75rem]">
-              Every email you send deserves{" "}
-              <span className="relative whitespace-nowrap">
-                the inbox.
-                <span
-                  aria-hidden="true"
-                  className="absolute -bottom-1 left-0 h-[3px] w-full rounded-full bg-accent-500"
-                />
-              </span>
-            </h2>
-            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-slate-400">
-              Dedicated IP, full authentication, managed warm-up — set up with
-              you by an engineer, not a ticket bot.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Link
-                href="/get-started"
-                className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-white px-8 text-[0.95rem] font-medium text-ink-950 outline-none transition-shadow duration-300 ease-out hover:shadow-[0_16px_32px_-14px_rgba(255,255,255,0.25)] focus-visible:ring-2 focus-visible:ring-accent-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950"
-              >
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-0 translate-y-full bg-accent-600 transition-transform duration-300 ease-out group-hover:translate-y-0"
-                />
-                <span className="relative transition-colors duration-300 group-hover:text-white">
-                  Get started
+      {/* ═════════ CTA — full-bleed white band, split cell with proof metrics ═════════ */}
+      <div className="relative border-b border-slate-200 bg-white">
+        <div className="relative mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
+          <div className="grid lg:grid-cols-[1.35fr_1fr]">
+            <div className="py-16 pr-0 lg:border-r lg:border-slate-200 lg:pr-14">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-accent-600">
+                next step
+              </p>
+              <h2 className="mt-4 max-w-xl text-[2rem] font-bold leading-[1.1] tracking-tight text-ink-950 sm:text-[2.75rem]">
+                Every email you send deserves{" "}
+                <span className="relative whitespace-nowrap">
+                  the inbox.
+                  <span
+                    aria-hidden="true"
+                    className="absolute -bottom-1 left-0 h-[3px] w-full rounded-full bg-accent-500"
+                  />
                 </span>
-                <ArrowRight
-                  aria-hidden="true"
-                  className="relative h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-0.5 group-hover:text-white"
-                  strokeWidth={1.75}
-                />
-              </Link>
-              <Link
-                href="/talk-to-sales"
-                className="rounded-full px-4 py-3 text-sm font-medium text-slate-300 transition-colors duration-200 hover:text-white focus-visible:outline-none focus-visible:underline focus-visible:decoration-accent-400 focus-visible:underline-offset-4"
-              >
-                Talk to sales
-              </Link>
+              </h2>
+              <p className="mt-5 max-w-md text-[15px] leading-relaxed text-slate-600">
+                Dedicated IP, full authentication, managed warm-up — set up with
+                you by an engineer, not a ticket bot.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Link
+                  href="/get-started"
+                  className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-ink-950 px-8 text-[0.95rem] font-medium text-white outline-none transition-shadow duration-300 ease-out hover:shadow-[0_16px_32px_-14px_rgba(11,14,20,0.35)] focus-visible:ring-2 focus-visible:ring-accent-600/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 translate-y-full bg-accent-600 transition-transform duration-300 ease-out group-hover:translate-y-0"
+                  />
+                  <span className="relative">Get started</span>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="relative h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-0.5"
+                    strokeWidth={1.75}
+                  />
+                </Link>
+                <Link
+                  href="/talk-to-sales"
+                  className="rounded-full px-4 py-3 text-sm font-medium text-slate-600 transition-colors duration-200 hover:text-ink-950 focus-visible:outline-none focus-visible:underline focus-visible:decoration-accent-600 focus-visible:underline-offset-4"
+                >
+                  Talk to sales
+                </Link>
+              </div>
+            </div>
+
+            {/* Proof metrics cell */}
+            <div className="grid content-center gap-0 border-t border-slate-200 lg:border-t-0 lg:pl-14">
+              {PROOF_POINTS.map(({ label, value }, i) => (
+                <div
+                  key={label}
+                  className={`flex items-baseline justify-between gap-6 py-6 ${
+                    i > 0 ? "border-t border-slate-200" : ""
+                  }`}
+                >
+                  <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">
+                    {label}
+                  </span>
+                  <span className="font-numeric text-2xl font-medium text-ink-950 sm:text-[1.75rem]">
+                    {value}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* Proof metrics cell */}
-          <div className="grid content-center gap-0 border-t border-white/10 lg:border-t-0 lg:pl-14">
-            {PROOF_POINTS.map(({ label, value }, i) => (
-              <div
-                key={label}
-                className={`flex items-baseline justify-between gap-6 py-6 ${
-                  i > 0 ? "border-t border-white/10" : ""
-                }`}
-              >
-                <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">
-                  {label}
-                </span>
-                <span className="font-numeric text-2xl font-medium text-white sm:text-[1.75rem]">
-                  {value}
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-6 sm:px-10 lg:px-14">
+        {/* Soft radial glow anchoring this dark section — matches CtaBand.
+            Scoped inside this container (not a direct footer child) so it
+            paints behind this section's own content instead of leaking
+            into the white CTA band above. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 right-0 h-[480px] w-[480px] rounded-full bg-accent-500 opacity-[0.06] blur-[120px]"
+        />
 
         {/* ═════════ Main grid — brand + hairline-divided columns ═════════ */}
-        <div className="grid gap-y-14 py-16 lg:grid-cols-[1.35fr_1fr_1fr_1fr] lg:gap-y-0">
+        <div className="relative grid gap-y-14 py-16 lg:grid-cols-[1.35fr_1fr_1fr_1fr] lg:gap-y-0">
           {/* Brand cell */}
           <div className="lg:border-r lg:border-white/10 lg:pr-14">
             <Link href="/" aria-label="SMTPblast home" className="inline-block">

@@ -237,6 +237,14 @@ const pricingTiers = [
   },
 ];
 
+// NOTE: entries below with a "[Customer name]"-style placeholder are NOT
+// real reviews — they exist so the "Trusted by senders worldwide" row on
+// the homepage isn't sparse on first launch. Replace the placeholder
+// fields with a real quote (with the customer's permission) via
+// /admin/testimonials before relying on them — publishing invented
+// reviews as genuine is against FTC endorsement guidelines (and EU/UK/
+// India equivalents). Real entries with an actual name and quote, like
+// Susan and Nikita below, are fine to keep as-is.
 const testimonials = [
   {
     name: "Susan",
@@ -256,6 +264,76 @@ const testimonials = [
     metric: "",
     date: "",
     source: "smtpblast.com",
+  },
+  {
+    name: "[Customer name]",
+    role: "Email Marketing Lead",
+    company: "[Company]",
+    quote: "[Replace with a real quote about a specific outcome — deliverability, warmup, support.]",
+    metric: "",
+    date: "",
+    source: "G2",
+    country: "🇩🇪 Germany",
+  },
+  {
+    name: "[Customer name]",
+    role: "Founder",
+    company: "[Company]",
+    quote: "[Replace with a real quote — short ones work well here.]",
+    metric: "",
+    date: "",
+    source: "X",
+    country: "🇮🇳 India",
+  },
+  {
+    name: "[Customer name]",
+    role: "CRM Manager",
+    company: "[Company]",
+    quote: "[Replace with a real quote.]",
+    metric: "",
+    date: "",
+    source: "G2",
+    country: "🇧🇷 Brazil",
+  },
+  {
+    name: "[Customer name]",
+    role: "Deliverability Consultant",
+    company: "[Company]",
+    quote: "[Replace with a real quote.]",
+    metric: "",
+    date: "",
+    source: "LinkedIn",
+    country: "🇬🇧 United Kingdom",
+  },
+  {
+    name: "[Customer name]",
+    role: "Lifecycle Marketer",
+    company: "[Company]",
+    quote: "[Replace with a real quote.]",
+    metric: "",
+    date: "",
+    source: "Trustpilot",
+    country: "🇦🇺 Australia",
+  },
+  {
+    name: "[Customer name]",
+    role: "Agency Owner",
+    company: "[Company]",
+    quote: "[Replace with a real quote.]",
+    metric: "",
+    date: "",
+    source: "Clutch",
+    country: "🇳🇬 Nigeria",
+  },
+  {
+    name: "[Customer name]",
+    role: "Demand Gen Manager",
+    company: "[Company]",
+    quote: "[Replace with a real quote.]",
+    metric: "",
+    date: "",
+    source: "X",
+    country: "🇨🇦 Canada",
   },
 ];
 

@@ -10,6 +10,7 @@ interface TestimonialDoc {
   metric: string;
   date: string;
   source: string;
+  country: string;
 }
 
 const FIELDS: FieldConfig<TestimonialDoc>[] = [
@@ -20,6 +21,11 @@ const FIELDS: FieldConfig<TestimonialDoc>[] = [
   { key: "metric", label: "Metric (optional callout)", type: "text" },
   { key: "date", label: "Date", type: "text" },
   { key: "source", label: "Source (where this was said)", type: "text", required: true },
+  {
+    key: "country",
+    label: "Country (flag emoji + name, e.g. \"🇩🇪 Germany\") — shown in the worldwide row",
+    type: "text",
+  },
 ];
 
 const EMPTY: TestimonialDoc = {
@@ -30,6 +36,7 @@ const EMPTY: TestimonialDoc = {
   metric: "",
   date: "",
   source: "",
+  country: "",
 };
 
 export default function AdminTestimonialsPage() {
@@ -46,6 +53,7 @@ export default function AdminTestimonialsPage() {
           <p className="mt-1.5 text-xs text-slate-500">
             {item.name}
             {item.company ? ` · ${item.company}` : ""}
+            {item.country ? ` · ${item.country}` : ""}
           </p>
         </div>
       )}
