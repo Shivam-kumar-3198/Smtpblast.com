@@ -74,12 +74,14 @@ export async function CtaBand({
                 Message us on WhatsApp
               </Link>
             ) : (
-              <Link
-                href="/talk-to-sales"
+              <a
+                href="https://wa.link/zf6mav"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-white/15 px-8 text-[0.95rem] font-medium text-white outline-none transition-colors duration-200 ease-out hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-accent-400/50"
               >
                 Talk to a deliverability engineer
-              </Link>
+              </a>
             )}
           </div>
         </Reveal>

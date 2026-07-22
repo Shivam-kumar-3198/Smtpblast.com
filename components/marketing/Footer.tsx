@@ -97,12 +97,14 @@ export async function Footer() {
                     strokeWidth={1.75}
                   />
                 </Link>
-                <Link
-                  href="/talk-to-sales"
+                <a
+                  href="https://wa.link/zf6mav"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="rounded-full px-4 py-3 text-sm font-medium text-slate-600 transition-colors duration-200 hover:text-ink-950 focus-visible:outline-none focus-visible:underline focus-visible:decoration-accent-600 focus-visible:underline-offset-4"
                 >
                   Talk to sales
-                </Link>
+                </a>
               </div>
             </div>
 

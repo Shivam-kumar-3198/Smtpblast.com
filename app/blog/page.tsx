@@ -160,8 +160,10 @@ export default async function BlogPage() {
                   </p>
                 </div>
               </div>
-              <Link
-                href="/talk-to-sales"
+              <a
+                href="https://wa.link/zf6mav"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-accent-600 outline-none focus-visible:ring-2 focus-visible:ring-accent-500/40"
               >
                 Talk to us
@@ -170,7 +172,7 @@ export default async function BlogPage() {
                   className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5"
                   strokeWidth={1.75}
                 />
-              </Link>
+              </a>
             </div>
           </Reveal>
         </section>

@@ -211,8 +211,10 @@ export default async function ServicePage({
                 <p className="max-w-lg text-sm font-medium text-accent-600">{service.useCase}</p>
 
                 <div className="mt-2 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
-                  <Link
-                    href="/get-started"
+                  <a
+                    href="https://wa.link/zf6mav"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-slate-900 px-8 text-[0.95rem] font-medium text-white outline-none transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_32px_-14px_rgba(15,23,42,0.5)] focus-visible:ring-2 focus-visible:ring-accent-500/50 focus-visible:ring-offset-2"
                   >
                     <span
@@ -225,7 +227,7 @@ export default async function ServicePage({
                       className="relative h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-0.5"
                       strokeWidth={1.75}
                     />
-                  </Link>
+                  </a>
                   <Link
                     href="/pricing"
                     className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full border border-slate-200 bg-white px-8 text-[0.95rem] font-medium text-ink-800 outline-none transition-colors duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-accent-500/40"

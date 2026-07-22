@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Nav } from "@/components/marketing/Nav";
 import { Footer } from "@/components/marketing/Footer";
 
@@ -106,12 +105,14 @@ export default function CompanyPage() {
                 than treat that step as optional.
               </p>
               <div className="anim-rise mt-10 flex flex-wrap items-center gap-4 [animation-delay:320ms]">
-                <Link
-                  href="/talk-to-sales"
+                <a
+                  href="https://wa.link/zf6mav"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-md bg-accent-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
                 >
                   Talk to a deliverability engineer
-                </Link>
+                </a>
                 <a
                   href="#how-we-warm-up"
                   className="inline-flex items-center gap-2 rounded-md px-2 py-3 text-sm font-medium text-ink-950 underline-offset-4 transition-colors hover:text-accent-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600"
@@ -322,12 +323,14 @@ export default function CompanyPage() {
                 dedicated setup and warm-up plan.
               </p>
               <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-                <Link
-                  href="/talk-to-sales"
+                <a
+                  href="https://wa.link/zf6mav"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded-md bg-accent-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   Talk to a deliverability engineer
-                </Link>
+                </a>
               </div>
             </div>
           </div>

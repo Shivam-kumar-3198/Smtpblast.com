@@ -87,12 +87,14 @@ export default async function PricingPage() {
                     strokeWidth={1.75}
                   />
                 </Link>
-                <Link
-                  href="/talk-to-sales"
+                <a
+                  href="https://wa.link/zf6mav"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full border border-slate-200 bg-white px-8 text-[0.95rem] font-medium text-ink-800 outline-none transition-colors duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-accent-500/40"
                 >
                   Talk to sales
-                </Link>
+                </a>
               </div>
             </Reveal>
           </div>
