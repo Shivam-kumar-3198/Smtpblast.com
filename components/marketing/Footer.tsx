@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getSiteSettings } from "@/lib/site-settings-content";
+import { listServices } from "@/lib/services-content";
 import {
   Send,
   Instagram,
@@ -18,17 +19,6 @@ const SOCIAL_ICON_MAP: Record<string, typeof Link2> = {
   Pinterest: MapPin,
 };
 
-const solutionsLinks = [
-  { label: "SMTP Server Provider", href: "/services/dedicated-smtp" },
-  { label: "Bulk Email Services", href: "/services/bulk-email" },
-  { label: "Email Campaign Services", href: "/services/email-campaigns" },
-  {
-    label: "Email Marketing Reseller Service",
-    href: "/services/email-marketing-reseller",
-  },
-  { label: "Email Marketing Services", href: "/services/email-marketing" },
-];
-
 const companyLinks = [
   { label: "About", href: "/company" },
   { label: "Blog", href: "/blog" },
@@ -41,12 +31,6 @@ const legalLinks = [
   { label: "Anti-Spam Policy", href: "/legal/anti-spam-policy" },
 ];
 
-const LINK_COLUMNS = [
-  { heading: "Solutions", links: solutionsLinks },
-  { heading: "Company", links: companyLinks },
-  { heading: "Legal", links: legalLinks },
-];
-
 const PROOF_POINTS = [
   { label: "avg. first reply", value: "< 4 hrs" },
   { label: "inbox placement", value: "98.4%" },
@@ -54,8 +38,18 @@ const PROOF_POINTS = [
 ];
 
 export async function Footer() {
-  const siteSettings = await getSiteSettings();
+  const [siteSettings, services] = await Promise.all([getSiteSettings(), listServices()]);
   const year = new Date().getFullYear();
+
+  // Solutions column mirrors the live services collection (same order as
+  // the admin panel and the homepage overview) instead of a hand-maintained
+  // list, so it can never drift out of sync with what's actually published.
+  const solutionsLinks = services.map((s) => ({ label: s.name, href: `/services/${s.slug}` }));
+  const linkColumns = [
+    { heading: "Solutions", links: solutionsLinks },
+    { heading: "Company", links: companyLinks },
+    { heading: "Legal", links: legalLinks },
+  ];
 
   return (
     <footer className="relative overflow-hidden bg-ink-950 text-slate-300">
@@ -214,11 +208,11 @@ export async function Footer() {
 
           {/* Link columns — sliding-arrow hover, hairline separation */}
           <nav aria-label="Footer" className="contents">
-            {LINK_COLUMNS.map(({ heading, links }, i) => (
+            {linkColumns.map(({ heading, links }, i) => (
               <div
                 key={heading}
                 className={`lg:pl-10 ${
-                  i < LINK_COLUMNS.length - 1
+                  i < linkColumns.length - 1
                     ? "lg:border-r lg:border-white/10 lg:pr-6"
                     : ""
                 }`}

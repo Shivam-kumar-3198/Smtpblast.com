@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
-import { ArrowLeft, ArrowRight, ChevronDown, Link2, ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Clock, ChevronDown, Link2, ExternalLink } from "lucide-react";
 import { Nav } from "@/components/marketing/Nav";
 import { Footer } from "@/components/marketing/Footer";
+import { TableOfContentsSidebar } from "@/components/blog/TableOfContentsSidebar";
 import { getPublishedPostBySlug, listPublishedPosts } from "@/lib/blog";
 import { buildToc, estimateReadTime, renderTiptapDoc, type TiptapDoc } from "@/lib/blog-content";
 import { blogPostingJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/schema";
@@ -92,7 +93,7 @@ export default async function BlogPostPage({
     <>
       <Nav />
       <main id="main-content" className="flex-1 bg-white">
-        <div className="mx-auto max-w-5xl px-6 py-20">
+        <div className="mx-auto max-w-5xl px-6 py-12 sm:py-16 lg:py-20">
           <nav aria-label="Breadcrumb" className="text-small text-slate-400">
             <Link href="/" className="hover:text-ink-950">
               Home
@@ -106,36 +107,48 @@ export default async function BlogPostPage({
           </nav>
 
           <div className="grid gap-10 lg:grid-cols-[1fr_16rem]">
-            <article className="min-w-0 max-w-2xl">
-              <div className="relative mt-6 overflow-hidden rounded-2xl ring-1 ring-slate-900/8">
+            <article className="min-w-0 max-w-184">
+              <div className="animate-settle relative mt-6 overflow-hidden rounded-2xl shadow-[0_16px_40px_-20px_rgba(15,23,42,0.25)] ring-1 ring-slate-900/8">
                 <Image
                   src={post.featuredImage.url}
                   alt={post.featuredImage.altText}
                   width={post.featuredImage.width}
                   height={post.featuredImage.height}
-                  sizes="(min-width: 1024px) 42rem, 100vw"
+                  sizes="(min-width: 1024px) 46rem, 100vw"
                   className="h-auto w-full"
                   priority
                 />
               </div>
 
-              <h1 className="mt-6 text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                {post.title}
-              </h1>
+              <div className="animate-settle">
+                <h1 className="mt-6 text-balance text-h3 font-semibold leading-tight tracking-tight text-ink-950 sm:text-h2">
+                  {post.title}
+                </h1>
 
-              <div className="mt-4 flex items-center gap-2 text-small text-slate-400">
-                <span>{post.author}</span>
-                <span aria-hidden>·</span>
-                <span>{formatDate(post.publishedAt)}</span>
-                <span aria-hidden>·</span>
-                <span>{estimateReadTime(post.content)}</span>
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-small text-slate-500">
+                  <span className="font-medium text-ink-800">{post.author}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.75} />
+                    {formatDate(post.publishedAt)}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.75} />
+                    {estimateReadTime(post.content)}
+                  </span>
+                </div>
               </div>
 
-              {toc.length > 0 && (
-                <nav aria-label="Table of contents" className="mt-8 rounded-2xl bg-surface-50 p-5 ring-1 ring-slate-900/6 lg:hidden">
-                  <p className="text-small font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    In this article
-                  </p>
+              {post.showToc && toc.length > 0 && (
+                <details open className="group mt-8 rounded-2xl bg-surface-50 p-5 ring-1 ring-slate-900/6 lg:hidden">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 marker:content-none">
+                    <span className="text-small font-semibold uppercase tracking-[0.14em] text-slate-400">
+                      In this article
+                    </span>
+                    <ChevronDown
+                      className="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 group-open:rotate-180"
+                      strokeWidth={1.75}
+                    />
+                  </summary>
                   <ul className="mt-3 space-y-2">
                     {toc.map((entry) => (
                       <li key={entry.id} className={entry.level === 3 ? "pl-4" : ""}>
@@ -145,14 +158,14 @@ export default async function BlogPostPage({
                       </li>
                     ))}
                   </ul>
-                </nav>
+                </details>
               )}
 
-              <div className="border-t border-slate-100 pt-2">
+              <div className="mt-8 border-t border-slate-100 pt-2">
                 {renderTiptapDoc(post.content as TiptapDoc, headingIds)}
               </div>
 
-              <div className="mt-12 flex flex-col items-start gap-5 rounded-2xl bg-surface-50 p-8 ring-1 ring-slate-900/6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mt-12 flex flex-col items-start gap-5 rounded-2xl bg-surface-50 p-8 shadow-[0_2px_8px_rgba(15,23,42,0.04)] ring-1 ring-slate-900/6 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="font-medium text-ink-950">Questions about your own setup?</p>
                   <p className="mt-1 text-sm text-slate-600">
@@ -302,27 +315,30 @@ export default async function BlogPostPage({
               )}
             </article>
 
-            {toc.length > 0 && (
-              <aside className="hidden lg:block">
-                <nav aria-label="Table of contents" className="sticky top-24 rounded-2xl bg-surface-50 p-5 ring-1 ring-slate-900/6">
-                  <p className="text-small font-semibold uppercase tracking-[0.14em] text-slate-400">
-                    In this article
+            <aside className="hidden lg:block">
+              <div className="sticky top-24 space-y-6">
+                {post.showToc && toc.length > 0 && <TableOfContentsSidebar toc={toc} />}
+
+                <div className="animate-settle rounded-2xl bg-surface-50 p-6 text-center ring-1 ring-slate-900/6">
+                  <Image
+                    src="/smtpblast-logo.webp"
+                    alt="SMTPblast"
+                    width={289}
+                    height={43}
+                    className="mx-auto h-6 w-auto"
+                  />
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                    High-deliverability SMTP servers that actually reach the inbox.
                   </p>
-                  <ul className="mt-3 space-y-2.5">
-                    {toc.map((entry) => (
-                      <li key={entry.id} className={entry.level === 3 ? "pl-4" : ""}>
-                        <a
-                          href={`#${entry.id}`}
-                          className="text-sm leading-snug text-slate-600 hover:text-accent-600"
-                        >
-                          {entry.text}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </nav>
-              </aside>
-            )}
+                  <Link
+                    href="/get-started"
+                    className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-accent-600 px-4 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-accent-700"
+                  >
+                    Get started free
+                  </Link>
+                </div>
+              </div>
+            </aside>
           </div>
         </div>
       </main>

@@ -84,8 +84,32 @@ function toInternalPath(href: string): string {
   return href.replace(/^https?:\/\/(www\.)?smtpblast\.com/i, "") || "/";
 }
 
-function isInternalLink(href: string): boolean {
+export function isInternalLink(href: string): boolean {
   return href.startsWith("/") || href.startsWith("#") || /smtpblast\.com/i.test(href);
+}
+
+/** Detects an explicit "nofollow" token in a link mark's `rel` attribute. */
+export function hasNofollowRel(rel: unknown): boolean {
+  return typeof rel === "string" && /(^|\s)nofollow(\s|$)/i.test(rel);
+}
+
+/** Detects an explicit "sponsored" token in a link mark's `rel` attribute. */
+export function hasSponsoredRel(rel: unknown): boolean {
+  return typeof rel === "string" && /(^|\s)sponsored(\s|$)/i.test(rel);
+}
+
+/**
+ * Builds the final `rel` string for a link mark from its individual
+ * choices — "open in new tab" contributes the noopener/noreferrer safety
+ * tokens, nofollow/sponsored are appended only when set. Shared between
+ * save-time sanitization and render-time output so the two stay in sync.
+ */
+function buildLinkRel(openInNewTab: boolean, nofollow: boolean, sponsored: boolean): string | null {
+  const tokens: string[] = [];
+  if (openInNewTab) tokens.push("noopener", "noreferrer");
+  if (nofollow) tokens.push("nofollow");
+  if (sponsored) tokens.push("sponsored");
+  return tokens.length ? tokens.join(" ") : null;
 }
 
 /**
@@ -105,30 +129,29 @@ function renderMarks(node: ReactNode, marks: TiptapMark[] | undefined): ReactNod
         return <em>{acc}</em>;
       case "code":
         return (
-          <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.85em] text-ink-950">
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.85em] text-ink-950 ring-1 ring-slate-900/5">
             {acc}
           </code>
         );
       case "link": {
         const href = String(mark.attrs?.href ?? "");
         if (!href) return acc;
+        const nofollow = hasNofollowRel(mark.attrs?.rel);
+        const sponsored = hasSponsoredRel(mark.attrs?.rel);
+        const openInNewTab = mark.attrs?.target === "_blank";
+        const rel = buildLinkRel(openInNewTab, nofollow, sponsored) ?? undefined;
+        const target = openInNewTab ? "_blank" : undefined;
+        const linkClassName =
+          "font-medium text-accent-600 underline decoration-accent-300 decoration-1 underline-offset-[3px] transition-colors duration-200 hover:text-accent-700 hover:decoration-accent-600";
         if (isInternalLink(href)) {
           return (
-            <Link
-              href={toInternalPath(href)}
-              className="text-accent-600 underline underline-offset-2 hover:text-accent-700"
-            >
+            <Link href={toInternalPath(href)} target={target} rel={rel} className={linkClassName}>
               {acc}
             </Link>
           );
         }
         return (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent-600 underline underline-offset-2 hover:text-accent-700"
-          >
+          <a href={href} target={target} rel={rel} className={linkClassName}>
             {acc}
           </a>
         );
@@ -162,6 +185,21 @@ function renderListItemContent(node: TiptapNode): ReactNode {
 }
 
 /**
+ * Table cells hold block content (usually a single paragraph), but the
+ * standalone <p> styling used at the article's top level (large top
+ * margin) would look wrong packed into a cell — render a paragraph inline
+ * instead, same pattern as renderListItemContent above.
+ */
+function renderCellContent(node: TiptapNode): ReactNode {
+  return node.content?.map((child, i) => {
+    if (child.type === "paragraph") {
+      return <Fragment key={i}>{renderInline(child.content)}</Fragment>;
+    }
+    return <Fragment key={i}>{renderBlock(child, i)}</Fragment>;
+  });
+}
+
+/**
  * headingIds comes from buildToc() run against this same doc object, so
  * headings get the exact ids the table of contents links to.
  */
@@ -173,7 +211,7 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
   switch (node.type) {
     case "paragraph":
       return (
-        <p key={key} className="mt-5 text-body-lg leading-relaxed text-slate-600">
+        <p key={key} className="mt-5 text-body-lg leading-[1.75] text-slate-600">
           {renderInline(node.content)}
         </p>
       );
@@ -190,7 +228,7 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
           <h2
             key={key}
             id={id}
-            className="mt-10 scroll-mt-24 text-h3 font-semibold tracking-tight text-ink-950"
+            className="mt-12 scroll-mt-24 text-balance text-h3 font-semibold leading-tight tracking-tight text-ink-950"
           >
             {text}
           </h2>
@@ -201,7 +239,7 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
           <h2
             key={key}
             id={id}
-            className="mt-10 scroll-mt-24 text-h4 font-semibold tracking-tight text-ink-950"
+            className="mt-10 scroll-mt-24 text-balance text-h4 font-semibold leading-tight tracking-tight text-ink-950"
           >
             {text}
           </h2>
@@ -209,21 +247,46 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
       }
       if (level === 3) {
         return (
-          <h3 key={key} id={id} className="mt-8 scroll-mt-24 text-lg font-semibold tracking-tight text-ink-950">
+          <h3
+            key={key}
+            id={id}
+            className="mt-8 scroll-mt-24 text-balance text-lg font-semibold leading-tight tracking-tight text-ink-950"
+          >
             {text}
           </h3>
         );
       }
+      if (level === 4) {
+        return (
+          <h4 key={key} id={id} className="mt-6 text-base font-semibold leading-snug text-ink-950">
+            {text}
+          </h4>
+        );
+      }
+      if (level === 5) {
+        return (
+          <h5
+            key={key}
+            id={id}
+            className="mt-5 text-sm font-semibold uppercase leading-snug tracking-wide text-ink-950"
+          >
+            {text}
+          </h5>
+        );
+      }
       return (
-        <h4 key={key} id={id} className="mt-6 text-base font-semibold text-ink-950">
+        <h6 key={key} id={id} className="mt-4 text-sm font-semibold italic leading-snug text-slate-600">
           {text}
-        </h4>
+        </h6>
       );
     }
 
     case "bulletList":
       return (
-        <ul key={key} className="mt-5 list-disc space-y-2 pl-6 text-body-lg leading-relaxed text-slate-600">
+        <ul
+          key={key}
+          className="mt-5 list-disc space-y-2.5 pl-6 text-body-lg leading-[1.75] text-slate-600 marker:text-slate-400"
+        >
           {node.content?.map((li, i) => (
             <li key={i}>{renderListItemContent(li)}</li>
           ))}
@@ -232,7 +295,10 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
 
     case "orderedList":
       return (
-        <ol key={key} className="mt-5 list-decimal space-y-2 pl-6 text-body-lg leading-relaxed text-slate-600">
+        <ol
+          key={key}
+          className="mt-5 list-decimal space-y-2.5 pl-6 text-body-lg leading-[1.75] text-slate-600 marker:text-slate-400"
+        >
           {node.content?.map((li, i) => (
             <li key={i}>{renderListItemContent(li)}</li>
           ))}
@@ -243,7 +309,7 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
       return (
         <blockquote
           key={key}
-          className="mt-5 border-l-2 border-accent-500 pl-4 text-body-lg italic leading-relaxed text-slate-600"
+          className="mt-6 rounded-r-xl border-l-4 border-accent-500 bg-accent-50/60 py-4 pl-6 pr-5 text-body-lg italic leading-[1.75] text-slate-700"
         >
           {node.content?.map((child, i) => (
             <Fragment key={i}>{renderBlock(child, i)}</Fragment>
@@ -255,14 +321,14 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
       return (
         <pre
           key={key}
-          className="mt-5 overflow-x-auto rounded-xl bg-ink-950 px-4 py-3.5 text-sm leading-relaxed text-slate-100"
+          className="mt-5 overflow-x-auto rounded-xl bg-ink-950 px-4 py-3.5 text-sm leading-relaxed text-slate-100 shadow-[0_2px_8px_rgba(15,23,42,0.08)]"
         >
           <code>{nodeText(node)}</code>
         </pre>
       );
 
     case "horizontalRule":
-      return <hr key={key} className="mt-8 border-slate-200" />;
+      return <hr key={key} className="my-10 border-slate-200" />;
 
     case "image": {
       const src = String(node.attrs?.src ?? "");
@@ -271,16 +337,61 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
       const width = Number(node.attrs?.width) || 1200;
       const height = Number(node.attrs?.height) || 675;
       return (
-        <span key={key} className="mt-6 block overflow-hidden rounded-2xl ring-1 ring-slate-900/8">
+        <span
+          key={key}
+          className="mt-8 block overflow-hidden rounded-2xl shadow-[0_12px_32px_-16px_rgba(15,23,42,0.18)] ring-1 ring-slate-900/8"
+        >
           <Image
             src={src}
             alt={alt}
             width={width}
             height={height}
-            sizes="(min-width: 1024px) 42rem, 100vw"
+            sizes="(min-width: 1024px) 46rem, 100vw"
             className="h-auto w-full"
           />
         </span>
+      );
+    }
+
+    case "table":
+      return (
+        <div key={key} className="mt-8 overflow-x-auto rounded-xl ring-1 ring-slate-900/8">
+          <table className="w-full min-w-[32rem] border-collapse text-sm">
+            <tbody>{node.content?.map((row, i) => renderBlock(row, i))}</tbody>
+          </table>
+        </div>
+      );
+
+    case "tableRow":
+      return <tr key={key} className="even:bg-surface-50/60">{node.content?.map((cell, i) => renderBlock(cell, i))}</tr>;
+
+    case "tableHeader": {
+      const colSpan = Number(node.attrs?.colspan) || 1;
+      const rowSpan = Number(node.attrs?.rowspan) || 1;
+      return (
+        <th
+          key={key}
+          colSpan={colSpan > 1 ? colSpan : undefined}
+          rowSpan={rowSpan > 1 ? rowSpan : undefined}
+          className="whitespace-nowrap border-b-2 border-slate-200 bg-surface-50 px-4 py-3 text-left text-sm font-semibold text-ink-950"
+        >
+          {renderCellContent(node)}
+        </th>
+      );
+    }
+
+    case "tableCell": {
+      const colSpan = Number(node.attrs?.colspan) || 1;
+      const rowSpan = Number(node.attrs?.rowspan) || 1;
+      return (
+        <td
+          key={key}
+          colSpan={colSpan > 1 ? colSpan : undefined}
+          rowSpan={rowSpan > 1 ? rowSpan : undefined}
+          className="border-b border-slate-100 px-4 py-3 align-top text-sm leading-relaxed text-slate-600"
+        >
+          {renderCellContent(node)}
+        </td>
       );
     }
 
@@ -290,10 +401,11 @@ function renderBlock(node: TiptapNode, key: number, headingIds?: Map<TiptapNode,
 }
 
 /**
- * Save-time link sanitization: external links get target="_blank" +
- * rel="noopener noreferrer"; internal (smtpblast.com) links get rewritten
- * to relative paths. Mutates a cloned tree — called before persisting a
- * post from the admin editor.
+ * Save-time link sanitization: rewrites internal (smtpblast.com) links to
+ * relative paths, and rebuilds `rel` from the mark's own target/nofollow/
+ * sponsored choices (set per-link via the editor's link popover) rather
+ * than forcing target="_blank" on every external link. Mutates a cloned
+ * tree — called before persisting a post from the admin editor.
  */
 export function sanitizeLinks(doc: TiptapDoc): TiptapDoc {
   function visit(node: TiptapNode): TiptapNode {
@@ -301,10 +413,15 @@ export function sanitizeLinks(doc: TiptapDoc): TiptapDoc {
       if (mark.type !== "link") return mark;
       const href = String(mark.attrs?.href ?? "");
       if (!href) return mark;
+      const openInNewTab = mark.attrs?.target === "_blank";
+      const nofollow = hasNofollowRel(mark.attrs?.rel);
+      const sponsored = hasSponsoredRel(mark.attrs?.rel);
+      const rel = buildLinkRel(openInNewTab, nofollow, sponsored);
+      const target = openInNewTab ? "_blank" : null;
       if (isInternalLink(href)) {
-        return { ...mark, attrs: { ...mark.attrs, href: toInternalPath(href), target: null, rel: null } };
+        return { ...mark, attrs: { ...mark.attrs, href: toInternalPath(href), target, rel } };
       }
-      return { ...mark, attrs: { ...mark.attrs, target: "_blank", rel: "noopener noreferrer" } };
+      return { ...mark, attrs: { ...mark.attrs, target, rel } };
     });
     return {
       ...node,

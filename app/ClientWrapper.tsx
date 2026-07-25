@@ -9,7 +9,7 @@ import { LeadPopup } from "@/components/marketing/LeadPopup";
 
 // Pages that already carry a full lead-capture form — showing the popup
 // there too would just be a second form on top of the first one.
-const POPUP_EXCLUDED_PATHS = ["/get-started", "/talk-to-sales"];
+const POPUP_EXCLUDED_PATHS = ["/get-started", "/talk-to-sales", "/thank-you"];
 
 /**
  * Scrolls to the element matching the current #hash, retrying across a

@@ -33,7 +33,7 @@ import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { ServiceFlowVisual } from "@/components/marketing/ServiceFlowVisual";
 import { ServiceHeroCollage } from "@/components/marketing/ServiceHeroCollage";
 import { getServiceBySlug, listServices } from "@/lib/services-content";
-import { proofRows, proofFootnote } from "@/content/proof-strip";
+import { getSolutionsSettingsDoc, applyServiceNameTemplate } from "@/lib/solutions-content";
 import { honestLimitation } from "@/components/marketing/HowItWorks";
 import { createCollectionCrud } from "@/lib/collection-crud";
 import { getSiteSettings } from "@/lib/site-settings-content";
@@ -123,12 +123,13 @@ export default async function ServicePage({
   }
 
   const HeroIcon = ICON_MAP[service.icon] ?? Server;
-  const [allFaqs, howItWorksSteps, testimonials, allServices, siteSettings] = await Promise.all([
+  const [allFaqs, howItWorksSteps, testimonials, allServices, siteSettings, solutions] = await Promise.all([
     createCollectionCrud<FaqDoc>("faqItems").list(),
     createCollectionCrud<StepDoc>("howItWorksSteps").list(),
     createCollectionCrud<TestimonialDoc>("testimonials").list(),
     listServices(),
     getSiteSettings(),
+    getSolutionsSettingsDoc(),
   ]);
   // Prefer this service's own curated FAQ; fall back to the first few
   // site-wide FAQs for services that haven't had one added yet.
@@ -182,8 +183,8 @@ export default async function ServicePage({
                   Home
                 </Link>
                 <span className="mx-2">/</span>
-                <Link href="/#features" className="hover:text-ink-950">
-                  Solutions
+                <Link href={solutions.breadcrumbHref} className="hover:text-ink-950">
+                  {solutions.breadcrumbLabel}
                 </Link>
                 <span className="mx-2">/</span>
                 <span className="text-ink-950">{service.name}</span>
@@ -212,7 +213,7 @@ export default async function ServicePage({
 
                 <div className="mt-2 flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
                   <a
-                    href="https://wa.link/zf6mav"
+                    href={solutions.heroCtaPrimaryHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-full bg-slate-900 px-8 text-[0.95rem] font-medium text-white outline-none transition-[box-shadow] duration-300 ease-out hover:shadow-[0_16px_32px_-14px_rgba(15,23,42,0.5)] focus-visible:ring-2 focus-visible:ring-accent-500/50 focus-visible:ring-offset-2"
@@ -221,7 +222,7 @@ export default async function ServicePage({
                       aria-hidden
                       className="absolute inset-0 translate-y-full bg-accent-600 transition-transform duration-300 ease-out group-hover:translate-y-0"
                     />
-                    <span className="relative">Get started</span>
+                    <span className="relative">{solutions.heroCtaPrimaryLabel}</span>
                     <ArrowRight
                       aria-hidden
                       className="relative h-4 w-4 transition-transform duration-300 ease-out group-hover:translate-x-0.5"
@@ -229,10 +230,10 @@ export default async function ServicePage({
                     />
                   </a>
                   <Link
-                    href="/pricing"
+                    href={solutions.heroCtaSecondaryHref}
                     className="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-full border border-slate-200 bg-white px-8 text-[0.95rem] font-medium text-ink-800 outline-none transition-colors duration-200 ease-out hover:border-slate-300 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-accent-500/40"
                   >
-                    View pricing
+                    {solutions.heroCtaSecondaryLabel}
                   </Link>
                 </div>
               </Reveal>
@@ -264,9 +265,9 @@ export default async function ServicePage({
         <section className="border-y border-slate-200 bg-white">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <Reveal className="flex flex-col items-start gap-4">
-              <SectionEyebrow>What&apos;s included</SectionEyebrow>
+              <SectionEyebrow>{solutions.includedEyebrow}</SectionEyebrow>
               <h2 className="max-w-2xl text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                What&apos;s included with {service.name}.
+                {applyServiceNameTemplate(solutions.includedHeadingTemplate, service.name)}
               </h2>
             </Reveal>
 
@@ -294,9 +295,9 @@ export default async function ServicePage({
         {/* ================= Shared vs dedicated ================= */}
         <section className="mx-auto max-w-6xl px-6 py-20">
           <Reveal className="flex flex-col items-start gap-4">
-            <SectionEyebrow>Shared vs. dedicated</SectionEyebrow>
+            <SectionEyebrow>{solutions.sharedVsDedicatedEyebrow}</SectionEyebrow>
             <h2 className="max-w-2xl text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-              Why this runs on dedicated infrastructure, not a shared pool.
+              {solutions.sharedVsDedicatedHeading}
             </h2>
           </Reveal>
 
@@ -311,19 +312,19 @@ export default async function ServicePage({
                   <th className="py-4 pr-4 text-small font-medium text-slate-400">
                     <span className="inline-flex items-center gap-1.5">
                       <XCircle className="h-4 w-4 text-danger-600" strokeWidth={1.5} />
-                      Shared IP
+                      {solutions.sharedVsDedicatedSharedColumnLabel}
                     </span>
                   </th>
                   <th className="py-4 pr-6 text-small font-medium text-slate-400">
                     <span className="inline-flex items-center gap-1.5">
                       <CheckCircle2 className="h-4 w-4 text-success-600" strokeWidth={1.5} />
-                      Dedicated IP
+                      {solutions.sharedVsDedicatedDedicatedColumnLabel}
                     </span>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {proofRows.map((row) => (
+                {solutions.sharedVsDedicatedRows.map((row) => (
                   <tr key={row.label} className="border-b border-slate-100 last:border-0">
                     <td className="py-4 pl-6 pr-4 text-sm font-medium text-ink-950">
                       {row.label}
@@ -335,16 +336,16 @@ export default async function ServicePage({
               </tbody>
             </table>
           </Reveal>
-          <p className="mt-4 text-small text-slate-400">{proofFootnote}</p>
+          <p className="mt-4 text-small text-slate-400">{solutions.sharedVsDedicatedFootnote}</p>
         </section>
 
         {/* ================= How it goes live ================= */}
         <section className="border-y border-slate-200 bg-surface-50/60">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <Reveal className="flex flex-col items-start gap-4">
-              <SectionEyebrow>How it works</SectionEyebrow>
+              <SectionEyebrow>{solutions.howItWorksEyebrow}</SectionEyebrow>
               <h2 className="max-w-2xl text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                From signup to inbox.
+                {solutions.howItWorksHeading}
               </h2>
             </Reveal>
 
@@ -372,9 +373,9 @@ export default async function ServicePage({
         {testimonials.length > 0 && (
           <section className="mx-auto max-w-6xl px-6 py-20">
             <Reveal className="flex flex-col items-start gap-4">
-              <SectionEyebrow>From customers</SectionEyebrow>
+              <SectionEyebrow>{solutions.testimonialsEyebrow}</SectionEyebrow>
               <h2 className="max-w-2xl text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                What senders on {service.name.toLowerCase()} say.
+                {applyServiceNameTemplate(solutions.testimonialsHeadingTemplate, service.name.toLowerCase())}
               </h2>
             </Reveal>
 
@@ -410,9 +411,9 @@ export default async function ServicePage({
         {serviceFaqs.length > 0 && (
           <section className="mx-auto max-w-3xl px-6 pb-20">
             <Reveal className="flex flex-col items-start gap-4">
-              <SectionEyebrow>FAQ</SectionEyebrow>
+              <SectionEyebrow>{solutions.faqEyebrow}</SectionEyebrow>
               <h2 className="text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                Questions about {service.name.toLowerCase()}.
+                {applyServiceNameTemplate(solutions.faqHeadingTemplate, service.name.toLowerCase())}
               </h2>
             </Reveal>
 
@@ -441,9 +442,9 @@ export default async function ServicePage({
         {service.links.length > 0 && (
           <section className="mx-auto max-w-3xl px-6 pb-20">
             <Reveal className="flex flex-col items-start gap-4">
-              <SectionEyebrow>Related links</SectionEyebrow>
+              <SectionEyebrow>{solutions.relatedLinksEyebrow}</SectionEyebrow>
               <h2 className="text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                Learn more about {service.name.toLowerCase()}.
+                {applyServiceNameTemplate(solutions.relatedLinksHeadingTemplate, service.name.toLowerCase())}
               </h2>
             </Reveal>
 
@@ -491,9 +492,9 @@ export default async function ServicePage({
         <section className="border-t border-slate-200 bg-white">
           <div className="mx-auto max-w-6xl px-6 py-20">
             <Reveal className="flex flex-col items-start gap-4">
-              <SectionEyebrow>Related solutions</SectionEyebrow>
+              <SectionEyebrow>{solutions.relatedServicesEyebrow}</SectionEyebrow>
               <h2 className="max-w-2xl text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-                Other ways teams send with us.
+                {solutions.relatedServicesHeading}
               </h2>
             </Reveal>
 
@@ -512,7 +513,7 @@ export default async function ServicePage({
                       <h3 className="mt-4 text-base font-semibold text-ink-950">{s.name}</h3>
                       <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.summary}</p>
                       <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-small font-medium text-accent-600">
-                        Learn more
+                        {solutions.relatedServiceCardCtaLabel}
                         <ArrowRight
                           aria-hidden
                           className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-0.5"

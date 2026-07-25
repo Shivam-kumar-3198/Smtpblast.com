@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, MessageSquareText, Sparkles, type LucideIcon } from "lucide-react";
 import * as Icons from "lucide-react";
 import { listServices } from "@/lib/services-content";
+import { getSolutionsSettingsDoc } from "@/lib/solutions-content";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -41,16 +42,16 @@ function resolveIcon(name: string): LucideIcon {
 }
 
 export async function ServicesOverview() {
-  const services = await listServices();
+  const [services, settings] = await Promise.all([listServices(), getSolutionsSettingsDoc()]);
   if (services.length === 0) return null;
 
   return (
     <section className="border-y border-slate-200 bg-white">
       <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
         <Reveal className="flex flex-col items-start gap-4">
-          <SectionEyebrow>What we offer</SectionEyebrow>
+          <SectionEyebrow>{settings.overviewEyebrow}</SectionEyebrow>
           <h2 className="max-w-2xl text-h3 font-semibold tracking-tight text-ink-950 sm:text-h2">
-            Everything you need to reach the inbox, under one account.
+            {settings.overviewHeading}
           </h2>
         </Reveal>
 
@@ -96,7 +97,7 @@ export async function ServicesOverview() {
                     </span>
 
                     <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-small font-medium text-accent-600">
-                      Learn more
+                      {settings.overviewCardCtaLabel}
                       <ArrowRight
                         aria-hidden
                         className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-1"
@@ -114,7 +115,7 @@ export async function ServicesOverview() {
               rest, fills with accent on hover) to hint it's an invitation. */}
           <Reveal delay={services.length * 0.05} className="h-full">
             <Link
-              href="/get-started"
+              href={settings.overviewCalloutCtaHref}
               className="group relative block h-full rounded-2xl bg-slate-900/8 p-px transition-transform duration-300 ease-out hover:-translate-y-1 focus-visible:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
             >
               {/* Lit edge — identical to the service cards */}
@@ -143,16 +144,14 @@ export async function ServicesOverview() {
                 </span>
 
                 <span className="mt-4 block text-h4 font-semibold text-ink-950">
-                  Need something tailored?
+                  {settings.overviewCalloutHeading}
                 </span>
                 <span className="mt-2 block text-sm leading-relaxed text-slate-600">
-                  Every sender&apos;s setup is different. Tell us where your
-                  email stands today and we&apos;ll map the fastest route to
-                  the inbox.
+                  {settings.overviewCalloutBody}
                 </span>
 
                 <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-small font-medium text-accent-600">
-                  Talk to a specialist
+                  {settings.overviewCalloutCtaLabel}
                   <ArrowRight
                     aria-hidden
                     className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-1"

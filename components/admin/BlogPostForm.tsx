@@ -26,6 +26,7 @@ function emptyFormState(author: string): BlogDraftInput {
     featuredImage: { url: "", width: 0, height: 0, altText: "" },
     links: [],
     faq: [],
+    showToc: true,
     status: "draft",
     author,
   };
@@ -72,6 +73,7 @@ export function BlogPostForm({
           featuredImage: initial.featuredImage,
           links: initial.links ?? [],
           faq: initial.faq ?? [],
+          showToc: initial.showToc ?? true,
           status: initial.status,
           author: initial.author,
         }
@@ -310,6 +312,23 @@ export function BlogPostForm({
         </div>
 
         <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-900/8">
+          <h3 className="text-sm font-semibold text-ink-950">Display</h3>
+          <label className="mt-3 flex items-center gap-2 text-sm text-ink-950">
+            <input
+              type="checkbox"
+              checked={form.showToc}
+              onChange={(e) => setForm((f) => ({ ...f, showToc: e.target.checked }))}
+              className="h-4 w-4 rounded border-slate-300 text-accent-600 focus:ring-accent-600/30"
+            />
+            Show Table of Contents
+          </label>
+          <p className="mt-1 text-[11px] text-slate-400">
+            Built automatically from this post&apos;s H2/H3/H4 headings. Turn off to hide it
+            on the published page without removing any headings.
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-900/8">
           <h3 className="text-sm font-semibold text-ink-950">SEO</h3>
 
           <div className="mt-3">
@@ -482,22 +501,42 @@ export function BlogPostForm({
                         </>
                       )}
                     </span>
-                    <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
-                      <input
-                        type="checkbox"
-                        checked={link.nofollow}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            links: f.links.map((l, idx) =>
-                              idx === i ? { ...l, nofollow: e.target.checked } : l
-                            ),
-                          }))
-                        }
-                        className="h-3.5 w-3.5 rounded border-slate-300 text-accent-600 focus:ring-accent-600/30"
-                      />
-                      Nofollow
-                    </label>
+                    <div className="inline-flex items-center gap-3 text-[11px] font-medium text-slate-500">
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name={`link-follow-${i}`}
+                          checked={!link.nofollow}
+                          onChange={() =>
+                            setForm((f) => ({
+                              ...f,
+                              links: f.links.map((l, idx) =>
+                                idx === i ? { ...l, nofollow: false } : l
+                              ),
+                            }))
+                          }
+                          className="h-3.5 w-3.5 border-slate-300 text-accent-600 focus:ring-accent-600/30"
+                        />
+                        Dofollow
+                      </label>
+                      <label className="inline-flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name={`link-follow-${i}`}
+                          checked={link.nofollow}
+                          onChange={() =>
+                            setForm((f) => ({
+                              ...f,
+                              links: f.links.map((l, idx) =>
+                                idx === i ? { ...l, nofollow: true } : l
+                              ),
+                            }))
+                          }
+                          className="h-3.5 w-3.5 border-slate-300 text-accent-600 focus:ring-accent-600/30"
+                        />
+                        Nofollow
+                      </label>
+                    </div>
                   </div>
                 </div>
               );

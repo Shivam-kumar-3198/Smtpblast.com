@@ -1,5 +1,5 @@
 import { ArrowRight, CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
-import { proofFootnote, proofRows } from "@/content/proof-strip";
+import { getSolutionsSettingsDoc } from "@/lib/solutions-content";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -39,7 +39,9 @@ const BAD_DOT = 7;
 const YOU_DOT = 6;
 const TAINTED = new Set([2, 6, 8, 11, 12]);
 
-export function ProofStrip() {
+export async function ProofStrip() {
+  const solutions = await getSolutionsSettingsDoc();
+
   return (
     <section className="relative border-y border-slate-200 bg-white">
       {/* Local keyframes. All motion is disabled under prefers-reduced-motion. */}
@@ -333,7 +335,7 @@ export function ProofStrip() {
               </tr>
             </thead>
             <tbody>
-              {proofRows.map((row) => (
+              {solutions.sharedVsDedicatedRows.map((row) => (
                 <tr
                   key={row.label}
                   className="group border-b border-slate-100 transition-colors hover:bg-surface-50/60"
@@ -363,7 +365,7 @@ export function ProofStrip() {
           </table>
         </Reveal>
 
-        <p className="mt-4 text-small text-slate-400">{proofFootnote}</p>
+        <p className="mt-4 text-small text-slate-400">{solutions.sharedVsDedicatedFootnote}</p>
 
         {/* ——— 4. Next step: one clear action, made to feel safe ——— */}
         <Reveal

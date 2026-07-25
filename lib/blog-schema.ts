@@ -68,6 +68,7 @@ export const blogPostSchema = z.object({
   featuredImage: featuredImageSchema,
   links: z.array(postLinkSchema).default([]),
   faq: z.array(postFaqItemSchema).default([]),
+  showToc: z.boolean().default(true),
   status: z.enum(["draft", "published"]),
   author: z.string().trim().min(1, "Author is required").max(120),
 });
@@ -102,6 +103,7 @@ export const blogDraftSchema = z.object({
   }),
   links: z.array(postLinkSchema).default([]),
   faq: z.array(postFaqItemSchema).default([]),
+  showToc: z.boolean().default(true),
   status: z.enum(["draft", "published"]),
   author: z.string().trim().min(1, "Author is required").max(120),
 });

@@ -50,6 +50,7 @@ export interface PostRecord {
   };
   links: PostLink[];
   faq: PostFaqItem[];
+  showToc: boolean;
   status: PostStatus;
   author: string;
   createdAt: Date | null;
@@ -88,6 +89,10 @@ function fromSnapshot(id: string, data: Record<string, unknown>): PostRecord {
     },
     links: Array.isArray(data.links) ? (data.links as PostLink[]) : [],
     faq: Array.isArray(data.faq) ? (data.faq as PostFaqItem[]) : [],
+    // Existing posts predate this field — default to on (matches the TOC
+    // that already rendered unconditionally before this toggle existed) so
+    // nothing changes for a post until someone explicitly turns it off.
+    showToc: data.showToc !== false,
     status: (data.status as PostStatus) ?? "draft",
     author: String(data.author ?? ""),
     createdAt: toDate(data.createdAt),
@@ -148,6 +153,7 @@ const FALLBACK_POSTS: PostRecord[] = [
     ),
     links: [],
     faq: [],
+    showToc: true,
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-05"),
@@ -189,6 +195,7 @@ const FALLBACK_POSTS: PostRecord[] = [
     ),
     links: [],
     faq: [],
+    showToc: true,
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-08"),
@@ -230,6 +237,7 @@ const FALLBACK_POSTS: PostRecord[] = [
     ),
     links: [],
     faq: [],
+    showToc: true,
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-12"),
@@ -274,6 +282,7 @@ const FALLBACK_POSTS: PostRecord[] = [
     ),
     links: [],
     faq: [],
+    showToc: true,
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-15"),
@@ -315,6 +324,7 @@ const FALLBACK_POSTS: PostRecord[] = [
     ),
     links: [],
     faq: [],
+    showToc: true,
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-19"),
@@ -356,6 +366,7 @@ const FALLBACK_POSTS: PostRecord[] = [
     ),
     links: [],
     faq: [],
+    showToc: true,
     status: "published",
     author: FALLBACK_AUTHOR,
     createdAt: new Date("2026-01-22"),
@@ -373,6 +384,7 @@ function toFirestorePayload(input: BlogDraftInput) {
     featuredImage: input.featuredImage,
     links: input.links,
     faq: input.faq,
+    showToc: input.showToc,
     status: input.status,
     author: input.author,
   };

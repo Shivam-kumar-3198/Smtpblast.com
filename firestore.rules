@@ -21,7 +21,8 @@ rules_version = '2';
 //    write, not re-litigate every business rule the form already enforces.
 //  - posts specifically: drafts are only visible to admins; published
 //    posts are public. Everything else has no draft concept.
-//  - siteSettings: a single document, same public-read/admin-write shape.
+//  - siteSettings, solutionsSettings: single documents, same
+//    public-read/admin-write shape.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -104,6 +105,11 @@ service cloud.firestore {
     }
 
     match /siteSettings/main {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /solutionsSettings/main {
       allow read: if true;
       allow write: if isAdmin();
     }

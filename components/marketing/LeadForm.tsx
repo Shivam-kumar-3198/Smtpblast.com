@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { planOptions } from "@/lib/lead-schema";
 import { submitLead } from "@/lib/leads";
 
@@ -30,6 +31,7 @@ export function LeadForm({
   source: string;
   defaultPlan?: string;
 }) {
+  const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [messageLength, setMessageLength] = useState(0);
@@ -70,46 +72,7 @@ export function LeadForm({
     setStatus("success");
     form.reset();
     setMessageLength(0);
-  }
-
-  if (status === "success") {
-    return (
-      <div
-        className="rounded-2xl border border-[#BFE3CE] bg-[#F1FAF4] p-8 text-center"
-        role="status"
-      >
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#14372F]">
-          <svg
-            className="h-5 w-5 text-[#8FD9B6]"
-            viewBox="0 0 20 20"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M4 10.5l4 4 8-9"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <p className="mt-4 text-base font-semibold text-[#101512]">
-          Request received
-        </p>
-        <p className="mt-1.5 text-sm leading-relaxed text-[#5B6B62]">
-          A deliverability engineer will reply to your work email shortly —
-          usually within a few hours.
-        </p>
-        <button
-          type="button"
-          onClick={() => setStatus("idle")}
-          className="mt-5 text-sm font-medium text-[#14372F] underline decoration-[#8FD9B6] decoration-2 underline-offset-4 transition hover:decoration-[#14372F]"
-        >
-          Send another request
-        </button>
-      </div>
-    );
+    router.push(`/thank-you?source=${encodeURIComponent(source)}`);
   }
 
   return (

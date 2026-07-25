@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { doc, setDoc } from "firebase/firestore";
 import {
   Plus,
   Trash2,
@@ -11,8 +12,15 @@ import {
   ImagePlus,
   Link2,
   ExternalLink,
+  Globe,
 } from "lucide-react";
 import { createCollectionCrud } from "@/lib/collection-crud";
+import { db } from "@/lib/firebase";
+import {
+  getSolutionsSettingsDoc,
+  DEFAULT_SOLUTIONS_SETTINGS,
+  type SolutionsSettingsDoc,
+} from "@/lib/solutions-content";
 
 interface ServiceIncludedItem {
   icon: string;
@@ -110,6 +118,16 @@ export default function AdminServicesPage() {
     secondary: "",
   });
 
+  // Section-level copy (headings, intros, CTAs) that wraps around the
+  // per-service list above — a separate singleton doc (solutionsSettings/
+  // main), same pattern as Site Settings, so it never touches the
+  // `services` collection or its documents.
+  const [sectionForm, setSectionForm] = useState<SolutionsSettingsDoc>(DEFAULT_SOLUTIONS_SETTINGS);
+  const [sectionLoading, setSectionLoading] = useState(true);
+  const [sectionSaving, setSectionSaving] = useState(false);
+  const [sectionSaved, setSectionSaved] = useState(false);
+  const [sectionError, setSectionError] = useState("");
+
   useEffect(() => {
     const unsubscribe = crud.subscribe(
       (data) => setServices(data as WithId<ServiceDoc>[]),
@@ -117,6 +135,31 @@ export default function AdminServicesPage() {
     );
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    getSolutionsSettingsDoc()
+      .then(setSectionForm)
+      .finally(() => setSectionLoading(false));
+  }, []);
+
+  async function handleSectionSave() {
+    setSectionSaving(true);
+    setSectionError("");
+    setSectionSaved(false);
+    try {
+      await setDoc(doc(db, "solutionsSettings", "main"), sectionForm);
+      setSectionSaved(true);
+      setTimeout(() => setSectionSaved(false), 2500);
+    } catch (err) {
+      setSectionError(
+        err instanceof Error
+          ? `Couldn't save: ${err.message}`
+          : "Something went wrong saving this content. Try again."
+      );
+    } finally {
+      setSectionSaving(false);
+    }
+  }
 
   function openNew() {
     setForm(EMPTY);
@@ -153,14 +196,25 @@ export default function AdminServicesPage() {
     }
     setSaving(true);
     try {
-      if (editing === "new") {
-        await crud.create({ ...form, order: services?.length ?? 0 } as ServiceDoc & { order: number });
-      } else if (editing) {
-        await crud.update(editing.id, form);
-      }
+      await Promise.all([
+        editing === "new"
+          ? crud.create({ ...form, order: services?.length ?? 0 } as ServiceDoc & { order: number })
+          : editing
+            ? crud.update(editing.id, form)
+            : Promise.resolve(),
+        // The "shared across all services" fields edited from this same
+        // modal live on their own singleton doc, not on this service —
+        // saved alongside it here so the whole modal feels like one save
+        // action instead of two.
+        setDoc(doc(db, "solutionsSettings", "main"), sectionForm),
+      ]);
       setEditing(null);
-    } catch {
-      setError("Something went wrong saving this service. Try again.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Couldn't save: ${err.message}`
+          : "Something went wrong saving this service. Try again."
+      );
     } finally {
       setSaving(false);
     }
@@ -212,6 +266,124 @@ export default function AdminServicesPage() {
           {error}
         </p>
       )}
+
+      {/* ================= Homepage overview block ================= */}
+      <div className="mt-6 rounded-2xl bg-white p-5 ring-1 ring-slate-900/8">
+        <h2 className="text-sm font-semibold text-ink-950">Homepage overview block</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          The &quot;What we offer&quot; section on the homepage — its eyebrow, heading, card
+          CTA label, and the &quot;Need something tailored?&quot; callout card. Each
+          individual service&apos;s own content is edited via that service&apos;s own card
+          below.
+        </p>
+
+        {sectionLoading ? (
+          <p className="mt-4 text-sm text-slate-400">Loading…</p>
+        ) : (
+          <>
+            {sectionError && (
+              <p className="mt-4 rounded-lg border border-danger-500/20 bg-danger-50 px-4 py-3 text-sm text-danger-600">
+                {sectionError}
+              </p>
+            )}
+            {sectionSaved && (
+              <p className="mt-4 rounded-lg border border-success-500/20 bg-success-50 px-4 py-3 text-sm text-success-600">
+                Saved.
+              </p>
+            )}
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                <input
+                  type="text"
+                  value={sectionForm.overviewEyebrow}
+                  onChange={(e) => setSectionForm((f) => ({ ...f, overviewEyebrow: e.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-ink-950">Card CTA label</label>
+                <input
+                  type="text"
+                  value={sectionForm.overviewCardCtaLabel}
+                  onChange={(e) =>
+                    setSectionForm((f) => ({ ...f, overviewCardCtaLabel: e.target.value }))
+                  }
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                />
+              </div>
+            </div>
+            <div className="mt-3">
+              <label className="text-xs font-medium text-ink-950">Heading</label>
+              <input
+                type="text"
+                value={sectionForm.overviewHeading}
+                onChange={(e) => setSectionForm((f) => ({ ...f, overviewHeading: e.target.value }))}
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+              />
+            </div>
+            <p className="mt-4 text-[11px] font-medium uppercase tracking-wide text-slate-400">
+              &quot;Need something tailored?&quot; callout card
+            </p>
+            <div className="mt-2">
+              <label className="text-xs font-medium text-ink-950">Callout heading</label>
+              <input
+                type="text"
+                value={sectionForm.overviewCalloutHeading}
+                onChange={(e) =>
+                  setSectionForm((f) => ({ ...f, overviewCalloutHeading: e.target.value }))
+                }
+                className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+              />
+            </div>
+            <div className="mt-3">
+              <label className="text-xs font-medium text-ink-950">Callout body</label>
+              <textarea
+                rows={2}
+                value={sectionForm.overviewCalloutBody}
+                onChange={(e) =>
+                  setSectionForm((f) => ({ ...f, overviewCalloutBody: e.target.value }))
+                }
+                className="mt-1 w-full resize-y rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+              />
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-ink-950">Callout CTA label</label>
+                <input
+                  type="text"
+                  value={sectionForm.overviewCalloutCtaLabel}
+                  onChange={(e) =>
+                    setSectionForm((f) => ({ ...f, overviewCalloutCtaLabel: e.target.value }))
+                  }
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-ink-950">Callout CTA link</label>
+                <input
+                  type="text"
+                  value={sectionForm.overviewCalloutCtaHref}
+                  onChange={(e) =>
+                    setSectionForm((f) => ({ ...f, overviewCalloutCtaHref: e.target.value }))
+                  }
+                  className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSectionSave}
+              disabled={sectionSaving}
+              className="mt-4 w-full rounded-lg bg-accent-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-accent-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+            >
+              {sectionSaving ? "Saving…" : "Save homepage overview"}
+            </button>
+          </>
+        )}
+      </div>
 
       <div className="mt-6 space-y-3">
         {services === null && <p className="text-sm text-slate-400">Loading…</p>}
@@ -357,6 +529,91 @@ export default function AdminServicesPage() {
                 />
               </div>
 
+              {/* ---- Shared: breadcrumb + hero buttons ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — breadcrumb &amp; hero buttons
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Breadcrumb label</label>
+                    <input
+                      type="text"
+                      value={sectionForm.breadcrumbLabel}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, breadcrumbLabel: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Breadcrumb link</label>
+                    <input
+                      type="text"
+                      value={sectionForm.breadcrumbHref}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, breadcrumbHref: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Primary button label</label>
+                    <input
+                      type="text"
+                      value={sectionForm.heroCtaPrimaryLabel}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, heroCtaPrimaryLabel: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Primary button link</label>
+                    <input
+                      type="text"
+                      value={sectionForm.heroCtaPrimaryHref}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, heroCtaPrimaryHref: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      Secondary button label
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.heroCtaSecondaryLabel}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, heroCtaSecondaryLabel: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      Secondary button link
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.heroCtaSecondaryHref}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, heroCtaSecondaryHref: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-medium text-ink-950">Meta title</label>
@@ -475,6 +732,46 @@ export default function AdminServicesPage() {
                     onChange={(e) => setForm((f) => ({ ...f, heroBadgeLabel: e.target.value }))}
                     className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
                   />
+                </div>
+              </div>
+
+              {/* ---- Shared: "What's included" section heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — &quot;What&apos;s included&quot; heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.includedEyebrow}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, includedEyebrow: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      Heading (use <code className="rounded bg-slate-100 px-1">{"{name}"}</code>{" "}
+                      for the service name)
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.includedHeadingTemplate}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, includedHeadingTemplate: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -639,6 +936,313 @@ export default function AdminServicesPage() {
                 </div>
               </div>
 
+              {/* ---- Shared: "Shared vs. dedicated" heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — &quot;Shared vs. dedicated&quot; heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.sharedVsDedicatedEyebrow}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, sharedVsDedicatedEyebrow: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Heading</label>
+                    <input
+                      type="text"
+                      value={sectionForm.sharedVsDedicatedHeading}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, sharedVsDedicatedHeading: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Shared: "Shared vs. dedicated" comparison table ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — comparison table
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page and the homepage&apos;s
+                  shared-vs-dedicated comparison section.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      &quot;Shared&quot; column label
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.sharedVsDedicatedSharedColumnLabel}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({
+                          ...f,
+                          sharedVsDedicatedSharedColumnLabel: e.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      &quot;Dedicated&quot; column label
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.sharedVsDedicatedDedicatedColumnLabel}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({
+                          ...f,
+                          sharedVsDedicatedDedicatedColumnLabel: e.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between">
+                  <label className="text-xs font-medium text-ink-950">Comparison rows</label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSectionForm((f) => ({
+                        ...f,
+                        sharedVsDedicatedRows: [
+                          ...f.sharedVsDedicatedRows,
+                          { label: "", shared: "", dedicated: "" },
+                        ],
+                      }))
+                    }
+                    className="text-xs font-medium text-accent-600 hover:text-accent-700"
+                  >
+                    + Add
+                  </button>
+                </div>
+                <div className="mt-1.5 space-y-2">
+                  {sectionForm.sharedVsDedicatedRows.map((row, i) => (
+                    <div key={i} className="rounded-lg border border-slate-200 bg-white p-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={row.label}
+                          onChange={(e) =>
+                            setSectionForm((f) => ({
+                              ...f,
+                              sharedVsDedicatedRows: f.sharedVsDedicatedRows.map((r, idx) =>
+                                idx === i ? { ...r, label: e.target.value } : r
+                              ),
+                            }))
+                          }
+                          placeholder="Row label (e.g. Reputation)"
+                          className="flex-1 rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSectionForm((f) => ({
+                              ...f,
+                              sharedVsDedicatedRows: f.sharedVsDedicatedRows.filter(
+                                (_, idx) => idx !== i
+                              ),
+                            }))
+                          }
+                          aria-label="Remove"
+                          className="shrink-0 rounded-full p-1 text-slate-400 hover:bg-danger-50 hover:text-danger-600"
+                        >
+                          <X className="h-3.5 w-3.5" strokeWidth={1.75} />
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        value={row.shared}
+                        onChange={(e) =>
+                          setSectionForm((f) => ({
+                            ...f,
+                            sharedVsDedicatedRows: f.sharedVsDedicatedRows.map((r, idx) =>
+                              idx === i ? { ...r, shared: e.target.value } : r
+                            ),
+                          }))
+                        }
+                        placeholder="Shared IP column text"
+                        className="mt-1.5 w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                      />
+                      <input
+                        type="text"
+                        value={row.dedicated}
+                        onChange={(e) =>
+                          setSectionForm((f) => ({
+                            ...f,
+                            sharedVsDedicatedRows: f.sharedVsDedicatedRows.map((r, idx) =>
+                              idx === i ? { ...r, dedicated: e.target.value } : r
+                            ),
+                          }))
+                        }
+                        placeholder="Dedicated IP column text"
+                        className="mt-1.5 w-full rounded border border-slate-200 px-2 py-1 text-xs outline-none focus:border-accent-600"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-xs font-medium text-ink-950">Footnote</label>
+                  <input
+                    type="text"
+                    value={sectionForm.sharedVsDedicatedFootnote}
+                    onChange={(e) =>
+                      setSectionForm((f) => ({ ...f, sharedVsDedicatedFootnote: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                  />
+                </div>
+              </div>
+
+              {/* ---- Shared: "How it works" section heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — &quot;How it works&quot; heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one. The
+                  numbered steps themselves are managed on the How It Works admin page.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.howItWorksEyebrow}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, howItWorksEyebrow: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Heading</label>
+                    <input
+                      type="text"
+                      value={sectionForm.howItWorksHeading}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, howItWorksHeading: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Shared: "Testimonials" section heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — testimonials heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one. The
+                  testimonials themselves are managed on the Testimonials admin page.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.testimonialsEyebrow}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, testimonialsEyebrow: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      Heading (use <code className="rounded bg-slate-100 px-1">{"{name}"}</code>{" "}
+                      for the service name)
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.testimonialsHeadingTemplate}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({
+                          ...f,
+                          testimonialsHeadingTemplate: e.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ---- Shared: "Related links" section heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — &quot;Related links&quot; heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one. The
+                  links themselves are set per-service below.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.relatedLinksEyebrow}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, relatedLinksEyebrow: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      Heading (use <code className="rounded bg-slate-100 px-1">{"{name}"}</code>{" "}
+                      for the service name)
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.relatedLinksHeadingTemplate}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({
+                          ...f,
+                          relatedLinksHeadingTemplate: e.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* ---- SEO: links ---- */}
               <div>
                 <div className="flex items-center justify-between">
@@ -748,6 +1352,45 @@ export default function AdminServicesPage() {
                 </div>
               </div>
 
+              {/* ---- Shared: "FAQ" section heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — &quot;FAQ&quot; heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one. The
+                  questions themselves are set per-service below.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.faqEyebrow}
+                      onChange={(e) => setSectionForm((f) => ({ ...f, faqEyebrow: e.target.value }))}
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">
+                      Heading (use <code className="rounded bg-slate-100 px-1">{"{name}"}</code>{" "}
+                      for the service name)
+                    </label>
+                    <input
+                      type="text"
+                      value={sectionForm.faqHeadingTemplate}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, faqHeadingTemplate: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {/* ---- SEO: FAQ ---- */}
               <div>
                 <div className="flex items-center justify-between">
@@ -812,6 +1455,58 @@ export default function AdminServicesPage() {
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* ---- Shared: "Related solutions" section heading ---- */}
+              <div className="rounded-lg border border-dashed border-accent-300 bg-accent-50/40 p-3">
+                <div className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-accent-600" strokeWidth={1.75} />
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-accent-700">
+                    Shared across all services — &quot;Related solutions&quot; heading
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Editing this here updates it on every service page, not just this one. The
+                  other services listed there are picked automatically.
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Eyebrow</label>
+                    <input
+                      type="text"
+                      value={sectionForm.relatedServicesEyebrow}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({ ...f, relatedServicesEyebrow: e.target.value }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-ink-950">Card CTA label</label>
+                    <input
+                      type="text"
+                      value={sectionForm.relatedServiceCardCtaLabel}
+                      onChange={(e) =>
+                        setSectionForm((f) => ({
+                          ...f,
+                          relatedServiceCardCtaLabel: e.target.value,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <label className="text-xs font-medium text-ink-950">Heading</label>
+                  <input
+                    type="text"
+                    value={sectionForm.relatedServicesHeading}
+                    onChange={(e) =>
+                      setSectionForm((f) => ({ ...f, relatedServicesHeading: e.target.value }))
+                    }
+                    className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-accent-600 focus:ring-4 focus:ring-accent-600/10"
+                  />
                 </div>
               </div>
 
