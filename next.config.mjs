@@ -7,12 +7,15 @@ const nextConfig = {
   // symlink/reparse-point semantics Next's output file tracing (@vercel/nft)
   // relies on — it walks every module calling readlink() to build the trace,
   // which throws EISDIR on plain files here. Only skip tracing for local
-  // builds on this drive; every CI/deploy platform (Netlify, Vercel, ...)
-  // builds on a normal filesystem and needs the trace output to bundle each
-  // route's serverless function with the right dependencies — without it,
-  // dependency-heavy routes (e.g. the Tiptap-based blog editor) 500 at
-  // runtime on Vercel from missing modules that never got traced in.
-  outputFileTracing: Boolean(process.env.CI),
+  // builds on this drive via an explicit opt-out — every deploy platform
+  // needs the trace output to bundle each route's serverless function with
+  // the right dependencies (Firebase App Hosting's adapter requires it for
+  // `output: 'standalone'`; without it dependency-heavy routes like the
+  // Tiptap blog editor 500 at runtime from missing modules). Previously this
+  // keyed off `process.env.CI`, which Netlify sets but Firebase App
+  // Hosting's Cloud Build container does not — silently disabling tracing
+  // there too and breaking the standalone build.
+  outputFileTracing: !process.env.SKIP_OUTPUT_FILE_TRACING,
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
