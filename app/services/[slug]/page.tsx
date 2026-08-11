@@ -37,7 +37,7 @@ import { getSolutionsSettingsDoc, applyServiceNameTemplate } from "@/lib/solutio
 import { honestLimitation } from "@/components/marketing/HowItWorks";
 import { createCollectionCrud } from "@/lib/collection-crud";
 import { getSiteSettings } from "@/lib/site-settings-content";
-import { breadcrumbJsonLd, faqJsonLd, serviceJsonLd } from "@/lib/schema";
+import { breadcrumbJsonLd, faqJsonLd, jsonLdScript, serviceJsonLd } from "@/lib/schema";
 
 /** Internal vs external is inferred from the URL, same rule the blog editor uses. */
 function toInternalPath(url: string): string {
@@ -535,7 +535,7 @@ export default async function ServicePage({
         id="service-breadcrumb-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: jsonLdScript(
             breadcrumbJsonLd([
               { name: "Home", url: "/" },
               { name: service.name, url: `/services/${service.slug}` },
@@ -547,14 +547,14 @@ export default async function ServicePage({
         id="service-service-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(serviceJsonLd(siteSettings.companyName, service)),
+          __html: jsonLdScript(serviceJsonLd(siteSettings.companyName, service)),
         }}
       />
       {serviceFaqs.length > 0 && (
         <Script
           id="service-faq-jsonld"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(serviceFaqs)) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(faqJsonLd(serviceFaqs)) }}
         />
       )}
     </>

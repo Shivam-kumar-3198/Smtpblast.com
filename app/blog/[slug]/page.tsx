@@ -9,7 +9,7 @@ import { Footer } from "@/components/marketing/Footer";
 import { TableOfContentsSidebar } from "@/components/blog/TableOfContentsSidebar";
 import { getPublishedPostBySlug, listPublishedPosts } from "@/lib/blog";
 import { buildToc, estimateReadTime, renderTiptapDoc, type TiptapDoc } from "@/lib/blog-content";
-import { blogPostingJsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/schema";
+import { blogPostingJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings-content";
 
 /** Internal vs external is inferred from the URL, same rule the blog editor uses. */
@@ -347,7 +347,7 @@ export default async function BlogPostPage({
         id="blog-post-breadcrumb-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: jsonLdScript(
             breadcrumbJsonLd([
               { name: "Home", url: "/" },
               { name: "Blog", url: "/blog" },
@@ -360,7 +360,7 @@ export default async function BlogPostPage({
         id="blog-post-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: jsonLdScript(
             blogPostingJsonLd(siteSettings.companyName, {
               title: post.title,
               slug: post.slug,
@@ -378,7 +378,7 @@ export default async function BlogPostPage({
         <Script
           id="blog-post-faq-jsonld"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(post.faq)) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(faqJsonLd(post.faq)) }}
         />
       )}
     </>

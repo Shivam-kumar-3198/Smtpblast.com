@@ -5,7 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 import ClientWrapper from "./ClientWrapper";
 import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
-import { organizationJsonLd } from "@/lib/schema";
+import { jsonLdScript, organizationJsonLd } from "@/lib/schema";
 import { getSiteSettings } from "@/lib/site-settings-content";
 import { domain } from "@/content/site-settings";
 
@@ -39,6 +39,9 @@ export const metadata: Metadata = {
     description:
       "Dedicated SMTP servers with managed IP warm-up and SPF/DKIM/DMARC setup. Live in 24 hours.",
   },
+  verification: {
+    google: "Fx0udffQlpN8j1CGictFFLSEMeBtkduHKobu38FFrwM",
+  },
 };
 
 export const viewport: Viewport = {
@@ -65,7 +68,7 @@ export default async function RootLayout({
           type="application/ld+json"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationJsonLd(siteSettings)),
+            __html: jsonLdScript(organizationJsonLd(siteSettings)),
           }}
         />
       </body>

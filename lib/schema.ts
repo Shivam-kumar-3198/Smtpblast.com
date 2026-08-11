@@ -15,6 +15,16 @@ interface PricingTierForSchema {
 
 const siteUrl = `https://${domain}`;
 
+/**
+ * JSON.stringify doesn't escape "<", so admin-controlled text containing
+ * "</script>" (a blog title, FAQ answer, etc.) would break out of the
+ * JSON-LD <script> tag it's injected into via dangerouslySetInnerHTML.
+ * <-escaping it is a no-op for JSON parsers but can't close a tag.
+ */
+export function jsonLdScript(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 export function organizationJsonLd(siteSettings: SiteSettings) {
   return {
     "@context": "https://schema.org",

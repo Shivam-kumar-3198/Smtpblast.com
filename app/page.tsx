@@ -11,7 +11,7 @@ import { Pricing } from "@/components/marketing/Pricing";
 import { Faq } from "@/components/marketing/Faq";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { Footer } from "@/components/marketing/Footer";
-import { faqJsonLd, softwareApplicationJsonLd } from "@/lib/schema";
+import { faqJsonLd, jsonLdScript, softwareApplicationJsonLd } from "@/lib/schema";
 import { createCollectionCrud } from "@/lib/collection-crud";
 import { getSiteSettings } from "@/lib/site-settings-content";
 
@@ -63,7 +63,7 @@ export default async function Home() {
         id="software-application-jsonld"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: jsonLdScript(
             softwareApplicationJsonLd(siteSettings.companyName, pricingTiers)
           ),
         }}
@@ -71,7 +71,7 @@ export default async function Home() {
       <Script
         id="faq-jsonld"
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faqItems)) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(faqJsonLd(faqItems)) }}
       />
     </>
   );
