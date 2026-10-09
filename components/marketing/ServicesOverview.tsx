@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, MessageSquareText, Sparkles, type LucideIcon } from "lucide-react";
 import * as Icons from "lucide-react";
-import { listServices } from "@/lib/services-content";
-import { getSolutionsSettingsDoc } from "@/lib/solutions-content";
+import { getServices, getSolutionsSettings } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -42,7 +41,7 @@ function resolveIcon(name: string): LucideIcon {
 }
 
 export async function ServicesOverview() {
-  const [services, settings] = await Promise.all([listServices(), getSolutionsSettingsDoc()]);
+  const [services, settings] = await Promise.all([getServices(), getSolutionsSettings()]);
   if (services.length === 0) return null;
 
   return (

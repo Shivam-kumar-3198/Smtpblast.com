@@ -105,7 +105,7 @@ const PRICING_COLLECTION = "pricingTiers";
  * misconfigured, offline, or not seeded yet), so the pricing page never
  * renders blank just because the CMS is unreachable.
  */
-const FALLBACK_PRICING_TIERS: PricingTier[] = [
+export const FALLBACK_PRICING_TIERS: PricingTier[] = [
   {
     id: "fallback-basic",
     name: "Basic",

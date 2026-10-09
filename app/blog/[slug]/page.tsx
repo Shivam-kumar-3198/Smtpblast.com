@@ -7,10 +7,9 @@ import { ArrowLeft, ArrowRight, Calendar, Clock, ChevronDown, Link2, ExternalLin
 import { Nav } from "@/components/marketing/Nav";
 import { Footer } from "@/components/marketing/Footer";
 import { TableOfContentsSidebar } from "@/components/blog/TableOfContentsSidebar";
-import { getPublishedPostBySlug, listPublishedPosts } from "@/lib/blog";
-import { buildToc, estimateReadTime, renderTiptapDoc, type TiptapDoc } from "@/lib/blog-content";
+import { getPublishedPostBySlug, getPublishedPostSummaries, getSiteSettings } from "@/lib/public-data";
+import { buildToc, estimateReadTime, formatReadMinutes, renderTiptapDoc, type TiptapDoc } from "@/lib/blog-content";
 import { blogPostingJsonLd, breadcrumbJsonLd, faqJsonLd, jsonLdScript } from "@/lib/schema";
-import { getSiteSettings } from "@/lib/site-settings-content";
 
 /** Internal vs external is inferred from the URL, same rule the blog editor uses. */
 function toInternalPath(url: string): string {
@@ -22,7 +21,15 @@ function isInternalLink(url: string): boolean {
 
 // See app/blog/page.tsx — same reasoning, otherwise a published edit or a
 // slug fix in the admin never reaches this page without a full redeploy.
-export const revalidate = 60;
+export const revalidate = 300;
+
+// No slugs are prerendered at build; each post is rendered on first request
+// and then cached and revalidated like any other ISR page. Without this
+// export Next treats the dynamic segment as fully dynamic (rendered on every
+// request) and the revalidate window above would have no effect.
+export async function generateStaticParams() {
+  return [];
+}
 
 export async function generateMetadata({
   params,
@@ -84,7 +91,7 @@ export default async function BlogPostPage({
 
   const { toc, headingIds } = buildToc(post.content);
   const [allPosts, siteSettings] = await Promise.all([
-    listPublishedPosts(),
+    getPublishedPostSummaries(),
     getSiteSettings(),
   ]);
   const morePosts = allPosts.filter((p) => p.slug !== post.slug).slice(0, 3);
@@ -222,7 +229,7 @@ export default async function BlogPostPage({
                               {p.title}
                             </span>
                             <span className="mt-1 block text-sm text-slate-500">
-                              {estimateReadTime(p.content)}
+                              {formatReadMinutes(p.readingMinutes)}
                             </span>
                           </span>
                           <ArrowRight

@@ -7,19 +7,19 @@ import { ServicesOverview } from "@/components/marketing/ServicesOverview";
 import { BentoFeatures } from "@/components/marketing/BentoFeatures";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { SocialProof } from "@/components/marketing/SocialProof";
-import { Pricing } from "@/components/marketing/Pricing";
+import { Pricing, type PricingTierDoc as PricingSectionTier } from "@/components/marketing/Pricing";
 import { Faq } from "@/components/marketing/Faq";
 import { CtaBand } from "@/components/marketing/CtaBand";
 import { Footer } from "@/components/marketing/Footer";
 import { faqJsonLd, jsonLdScript, softwareApplicationJsonLd } from "@/lib/schema";
-import { createCollectionCrud } from "@/lib/collection-crud";
-import { getSiteSettings } from "@/lib/site-settings-content";
+import { getOrderedCollection, getSiteSettings } from "@/lib/public-data";
 
-// Same reasoning as app/blog/page.tsx: Firestore reads (bento features,
-// FAQ, pricing, testimonials, site settings) aren't visible to Next's
-// fetch-based cache heuristics, so without this the homepage renders once
-// at build time and admin edits never reach it until the next deploy.
-export const revalidate = 60;
+// Firestore reads (bento features, FAQ, pricing, testimonials, site
+// settings) aren't visible to Next's fetch-based cache heuristics, so this
+// is what makes the homepage re-render after build instead of freezing at
+// deploy time. 300s matches the data cache window in lib/public-data.ts —
+// a shorter page window would only re-read the same cached data.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -30,17 +30,10 @@ interface FaqDoc {
   answer: string;
 }
 
-interface PricingTierDoc {
-  name: string;
-  isContact: boolean;
-  priceUSD: number;
-  ctaHref: string;
-}
-
 export default async function Home() {
   const [faqItems, pricingTiers, siteSettings] = await Promise.all([
-    createCollectionCrud<FaqDoc>("faqItems").list(),
-    createCollectionCrud<PricingTierDoc>("pricingTiers").list(),
+    getOrderedCollection<FaqDoc>("faqItems"),
+    getOrderedCollection<PricingSectionTier>("pricingTiers"),
     getSiteSettings(),
   ]);
 
@@ -54,7 +47,7 @@ export default async function Home() {
         <BentoFeatures />
         <HowItWorks />
         <SocialProof />
-        <Pricing />
+        <Pricing tiers={pricingTiers} />
         <Faq />
         <CtaBand />
       </main>

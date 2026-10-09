@@ -1,4 +1,4 @@
-import { createCollectionCrud } from "@/lib/collection-crud";
+import { getOrderedCollection } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 import { FaqAccordion } from "./FaqAccordion";
@@ -9,7 +9,7 @@ interface FaqDoc {
 }
 
 export async function Faq() {
-  const faqItems = await createCollectionCrud<FaqDoc>("faqItems").list();
+  const faqItems = await getOrderedCollection<FaqDoc>("faqItems");
   if (faqItems.length === 0) return null;
 
   return (

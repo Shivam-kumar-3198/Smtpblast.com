@@ -1,5 +1,5 @@
 import { ArrowRight, CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
-import { getSolutionsSettingsDoc } from "@/lib/solutions-content";
+import { getSolutionsSettings } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -40,7 +40,7 @@ const YOU_DOT = 6;
 const TAINTED = new Set([2, 6, 8, 11, 12]);
 
 export async function ProofStrip() {
-  const solutions = await getSolutionsSettingsDoc();
+  const solutions = await getSolutionsSettings();
 
   return (
     <section className="relative border-y border-slate-200 bg-white">

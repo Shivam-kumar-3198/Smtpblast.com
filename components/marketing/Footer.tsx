@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getSiteSettings } from "@/lib/site-settings-content";
-import { listServices } from "@/lib/services-content";
+import { getServices, getSiteSettings } from "@/lib/public-data";
 import {
   Send,
   Instagram,
@@ -38,7 +37,7 @@ const PROOF_POINTS = [
 ];
 
 export async function Footer() {
-  const [siteSettings, services] = await Promise.all([getSiteSettings(), listServices()]);
+  const [siteSettings, services] = await Promise.all([getSiteSettings(), getServices()]);
   const year = new Date().getFullYear();
 
   // Solutions column mirrors the live services collection (same order as

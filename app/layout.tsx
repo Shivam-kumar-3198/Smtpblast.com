@@ -6,7 +6,7 @@ import "./globals.css";
 import ClientWrapper from "./ClientWrapper";
 import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
 import { jsonLdScript, organizationJsonLd } from "@/lib/schema";
-import { getSiteSettings } from "@/lib/site-settings-content";
+import { getSiteSettings } from "@/lib/public-data";
 import { domain } from "@/content/site-settings";
 
 const roboto = Roboto({

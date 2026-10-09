@@ -1,4 +1,4 @@
-import { createCollectionCrud } from "@/lib/collection-crud";
+import { getOrderedCollection } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -11,7 +11,7 @@ export const honestLimitation =
   "Warm-up takes 2-3 weeks on new IPs — we don't skip it, because skipping it is why mail lands in spam.";
 
 export async function HowItWorks() {
-  const steps = await createCollectionCrud<StepDoc>("howItWorksSteps").list();
+  const steps = await getOrderedCollection<StepDoc>("howItWorksSteps");
   if (steps.length === 0) return null;
 
   return (

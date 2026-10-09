@@ -5,13 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Menu, X, ArrowUpRight, Send } from "lucide-react";
 import { navItems as staticNavItems } from "@/content/nav";
-import { createCollectionCrud } from "@/lib/collection-crud";
 
 /**
  * The "Solutions" dropdown mirrors the live /admin/services (Solutions)
  * collection so edits made there — add, edit, delete, reorder — show up
- * here immediately, instead of the dropdown drifting out of sync with a
- * hand-maintained copy. Falls back to the static content/nav.ts entries
+ * here (within the /api/public/services cache window, a few minutes),
+ * instead of the dropdown drifting out of sync with a hand-maintained
+ * copy. Falls back to the static content/nav.ts entries
  * (used for SSR and the very first paint, and to fail soft if the
  * collection is empty or unreachable) so the menu never disappears.
  */
@@ -21,7 +21,7 @@ interface LiveServiceEntry {
   summary: string;
 }
 
-const servicesCrud = createCollectionCrud<LiveServiceEntry>("services");
+const SERVICES_ENDPOINT = "/api/public/services";
 
 /* ------------------------------------------------------------------ */
 /*  SMTPblast — "Paper & Transit" navigation  (v2)                     */
@@ -48,11 +48,16 @@ export function Nav() {
 
   /* ---------- live Solutions dropdown from /admin/services ---------- */
   useEffect(() => {
-    const unsubscribe = servicesCrud.subscribe(
-      (data) => setLiveServices(data),
-      () => setLiveServices(null)
-    );
-    return () => unsubscribe();
+    // One cached GET (CDN + browser cache) instead of a live Firestore
+    // listener per visitor. Any failure keeps the static fallback menu.
+    const controller = new AbortController();
+    fetch(SERVICES_ENDPOINT, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((data: LiveServiceEntry[]) => setLiveServices(Array.isArray(data) ? data : null))
+      .catch((err) => {
+        if (err?.name !== "AbortError") setLiveServices(null);
+      });
+    return () => controller.abort();
   }, []);
 
   const navItems = useMemo(() => {

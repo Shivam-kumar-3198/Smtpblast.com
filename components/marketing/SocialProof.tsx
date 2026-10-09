@@ -1,5 +1,5 @@
 import { Globe, TrendingUp } from "lucide-react";
-import { createCollectionCrud } from "@/lib/collection-crud";
+import { getOrderedCollection } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 import { LogoMarquee } from "./LogoMarquee";
 import { SectionEyebrow } from "./SectionEyebrow";
@@ -110,7 +110,7 @@ function GhostQuote({ featured = false }: { featured?: boolean }) {
 }
 
 export async function SocialProof() {
-  const testimonials = await createCollectionCrud<TestimonialDoc>("testimonials").list();
+  const testimonials = await getOrderedCollection<TestimonialDoc>("testimonials");
   const hasLogos = clientLogos.length > 0;
   const hasTestimonials = testimonials.length > 0;
 

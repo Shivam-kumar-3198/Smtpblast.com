@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Check, Minus } from "lucide-react";
-import { createCollectionCrud } from "@/lib/collection-crud";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -22,7 +21,7 @@ interface PricingFeature {
   included: boolean;
 }
 
-interface PricingTierDoc {
+export interface PricingTierDoc {
   name: string;
   tagline: string;
   isContact: boolean;
@@ -43,19 +42,14 @@ const priceByCurrency: Record<CurrencyCode, keyof PricingTierDoc> = {
   EUR: "priceEUR",
 };
 
-export function Pricing() {
+/**
+ * Tiers are fetched on the server (cached, see lib/public-data.ts) and passed
+ * in, instead of every visitor opening a live Firestore listener.
+ */
+export function Pricing({ tiers }: { tiers: (PricingTierDoc & { id: string })[] }) {
   const [currency, setCurrency] = useState<CurrencyCode>("USD");
-  const [tiers, setTiers] = useState<(PricingTierDoc & { id: string })[] | null>(null);
 
-  useEffect(() => {
-    const unsubscribe = createCollectionCrud<PricingTierDoc>("pricingTiers").subscribe(
-      (data) => setTiers(data),
-      () => setTiers([])
-    );
-    return () => unsubscribe();
-  }, []);
-
-  if (tiers !== null && tiers.length === 0) return null;
+  if (tiers.length === 0) return null;
 
   return (
     <section id="pricing" className="mx-auto max-w-6xl px-6 py-20">
@@ -98,7 +92,7 @@ export function Pricing() {
       </Reveal>
 
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {(tiers ?? []).map((tier, i) => (
+        {tiers.map((tier, i) => (
           <Reveal key={tier.id} delay={i * 0.05}>
             <div
               className={`relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-6 ring-1 transition-shadow duration-300 ease-out ${

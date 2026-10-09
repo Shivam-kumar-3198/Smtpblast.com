@@ -1,7 +1,7 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { ArrowRight, Mail } from "lucide-react";
-import { getSiteSettings } from "@/lib/site-settings-content";
+import { getSiteSettings } from "@/lib/public-data";
 
 const PipelineDashboard = dynamic(() =>
   import("./PipelineDashboard").then((mod) => mod.PipelineDashboard)

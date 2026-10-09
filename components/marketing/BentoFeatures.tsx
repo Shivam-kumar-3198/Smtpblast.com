@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import * as Icons from "lucide-react";
 import { type LucideIcon } from "lucide-react";
-import { createCollectionCrud } from "@/lib/collection-crud";
+import { getOrderedCollection } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 import { SectionEyebrow } from "./SectionEyebrow";
 
@@ -169,7 +169,7 @@ function spanClass(i: number): { span: string; wide: boolean } {
 }
 
 export async function BentoFeatures() {
-  const bentoFeatures = await createCollectionCrud<FeatureDoc>("bentoFeatures").list();
+  const bentoFeatures = await getOrderedCollection<FeatureDoc>("bentoFeatures");
   if (bentoFeatures.length === 0) return null;
 
   return (

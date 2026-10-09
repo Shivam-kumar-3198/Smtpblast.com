@@ -7,13 +7,12 @@ import { CtaBand } from "@/components/marketing/CtaBand";
 import { Reveal } from "@/components/marketing/Reveal";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { PricingTable } from "@/components/marketing/PricingTable";
-import { listPricingTiers } from "@/lib/pricing-content";
+import { getPricingTiers } from "@/lib/public-data";
 
-// Same reasoning as app/blog/page.tsx: without this, listPricingTiers()
-// only runs once at build time and an admin's price edit never reaches
-// this page until the next deploy — even though the homepage's pricing
-// section (a live Firestore subscription) already shows it instantly.
-export const revalidate = 60;
+// Without this, the pricing read only runs once at build time and an
+// admin's price edit never reaches this page until the next deploy.
+// 300s matches the data cache window in lib/public-data.ts.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PricingPage() {
-  const tiers = await listPricingTiers();
+  const tiers = await getPricingTiers();
 
   return (
     <>

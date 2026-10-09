@@ -69,8 +69,11 @@ export async function getSiteSettingsDoc(): Promise<SiteSettingsDoc> {
  * rather than a broken page, same rationale as lib/blog.ts's reads.
  */
 export async function getSiteSettings(): Promise<SiteSettings> {
-  const raw = await getSiteSettingsDoc();
+  return toSiteSettings(await getSiteSettingsDoc());
+}
 
+/** Pure mapper from the raw admin doc to the public shape — shared with lib/public-data.ts. */
+export function toSiteSettings(raw: SiteSettingsDoc): SiteSettings {
   return {
     companyName: raw.companyName || "SMTPblast",
     domain,

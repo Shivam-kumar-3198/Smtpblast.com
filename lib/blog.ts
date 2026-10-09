@@ -58,13 +58,13 @@ export interface PostRecord {
   publishedAt: Date | null;
 }
 
-const POSTS_COLLECTION = "posts";
+export const POSTS_COLLECTION = "posts";
 
 function toDate(value: unknown): Date | null {
   return value instanceof Timestamp ? value.toDate() : null;
 }
 
-function fromSnapshot(id: string, data: Record<string, unknown>): PostRecord {
+export function postFromSnapshot(id: string, data: Record<string, unknown>): PostRecord {
   const seoData = (data.seo as Record<string, unknown>) || {};
   const imgData = (data.featuredImage as Record<string, unknown>) || {};
 
@@ -113,7 +113,7 @@ function tiptapDoc(...blocks: TiptapNode[]): TiptapDoc {
 
 const FALLBACK_AUTHOR = "SMTPblast Team";
 
-const FALLBACK_POSTS: PostRecord[] = [
+export const FALLBACK_POSTS: PostRecord[] = [
   {
     id: "fallback-spf-dkim-dmarc-explained",
     title: "SPF, DKIM, and DMARC: What Each Record Checks",
@@ -441,7 +441,7 @@ export async function deletePost(id: string): Promise<void> {
 export async function getPostById(id: string): Promise<PostRecord | null> {
   const snap = await getDoc(doc(db, POSTS_COLLECTION, id));
   if (!snap.exists()) return null;
-  return fromSnapshot(snap.id, snap.data());
+  return postFromSnapshot(snap.id, snap.data());
 }
 
 export async function getPublishedPostBySlug(slug: string): Promise<PostRecord | null> {
@@ -457,7 +457,7 @@ export async function getPublishedPostBySlug(slug: string): Promise<PostRecord |
       console.warn(`[Firestore Info] No published post found for slug "${slug}". Returning fallback content.`);
       return FALLBACK_POSTS.find((p) => p.slug === slug) ?? null;
     }
-    return fromSnapshot(snap.docs[0].id, snap.docs[0].data());
+    return postFromSnapshot(snap.docs[0].id, snap.docs[0].data());
   } catch (err) {
     console.error("[Firestore Error] getPublishedPostBySlug failed:", err);
     return FALLBACK_POSTS.find((p) => p.slug === slug) ?? null;
@@ -472,7 +472,7 @@ export async function listPublishedPosts(): Promise<PostRecord[]> {
       orderBy("publishedAt", "desc")
     );
     const snap = await getDocs(q);
-    const firebasePosts = snap.docs.map((d) => fromSnapshot(d.id, d.data()));
+    const firebasePosts = snap.docs.map((d) => postFromSnapshot(d.id, d.data()));
     
     if (snap.empty) {
       console.warn("[Firestore Info] No published posts found. Returning combined list with fallbacks.");
@@ -502,7 +502,7 @@ export function subscribeToAllPosts(
   const q = query(collection(db, POSTS_COLLECTION), orderBy("updatedAt", "desc"));
   return onSnapshot(
     q,
-    (snap) => onData(snap.docs.map((d) => fromSnapshot(d.id, d.data()))),
+    (snap) => onData(snap.docs.map((d) => postFromSnapshot(d.id, d.data()))),
     (err) => {
       console.error("[Firestore Subscription Error]:", err);
       if (onError) onError(err);

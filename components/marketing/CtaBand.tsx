@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
-import { getSiteSettings } from "@/lib/site-settings-content";
+import { getSiteSettings } from "@/lib/public-data";
 import { Reveal } from "./Reveal";
 
 export async function CtaBand({

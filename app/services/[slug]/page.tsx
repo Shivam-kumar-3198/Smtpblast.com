@@ -32,11 +32,9 @@ import { Reveal } from "@/components/marketing/Reveal";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
 import { ServiceFlowVisual } from "@/components/marketing/ServiceFlowVisual";
 import { ServiceHeroCollage } from "@/components/marketing/ServiceHeroCollage";
-import { getServiceBySlug, listServices } from "@/lib/services-content";
-import { getSolutionsSettingsDoc, applyServiceNameTemplate } from "@/lib/solutions-content";
+import { getOrderedCollection, getServiceBySlug, getServices, getSiteSettings, getSolutionsSettings } from "@/lib/public-data";
+import { applyServiceNameTemplate } from "@/lib/solutions-content";
 import { honestLimitation } from "@/components/marketing/HowItWorks";
-import { createCollectionCrud } from "@/lib/collection-crud";
-import { getSiteSettings } from "@/lib/site-settings-content";
 import { breadcrumbJsonLd, faqJsonLd, jsonLdScript, serviceJsonLd } from "@/lib/schema";
 
 /** Internal vs external is inferred from the URL, same rule the blog editor uses. */
@@ -83,16 +81,15 @@ const ICON_MAP: Record<string, LucideIcon> = {
   TrendingUp,
 };
 
+// Same reasoning as app/blog/[slug]/page.tsx: no slugs are prerendered at
+// build; each service page is rendered on first request and then served
+// from the ISR cache, revalidated every 300s (matching lib/public-data.ts).
+// Returning [] is what makes the segment ISR instead of fully dynamic.
 export async function generateStaticParams() {
-  const services = await listServices();
-  return services.map((service) => ({ slug: service.slug }));
+  return [];
 }
 
-// Same reasoning as app/blog/[slug]/page.tsx: these are statically
-// generated at build time from the slugs above, so without a revalidate
-// window an admin's edit to a service's content never reaches the live
-// page until the next deploy.
-export const revalidate = 60;
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -124,12 +121,12 @@ export default async function ServicePage({
 
   const HeroIcon = ICON_MAP[service.icon] ?? Server;
   const [allFaqs, howItWorksSteps, testimonials, allServices, siteSettings, solutions] = await Promise.all([
-    createCollectionCrud<FaqDoc>("faqItems").list(),
-    createCollectionCrud<StepDoc>("howItWorksSteps").list(),
-    createCollectionCrud<TestimonialDoc>("testimonials").list(),
-    listServices(),
+    getOrderedCollection<FaqDoc>("faqItems"),
+    getOrderedCollection<StepDoc>("howItWorksSteps"),
+    getOrderedCollection<TestimonialDoc>("testimonials"),
+    getServices(),
     getSiteSettings(),
-    getSolutionsSettingsDoc(),
+    getSolutionsSettings(),
   ]);
   // Prefer this service's own curated FAQ; fall back to the first few
   // site-wide FAQs for services that haven't had one added yet.

@@ -56,7 +56,7 @@ const SERVICES_COLLECTION = "services";
  * offline, or not seeded yet), so the Solutions pages never hard-404 just
  * because the CMS is unreachable.
  */
-const FALLBACK_SERVICES: ServiceRecord[] = [
+export const FALLBACK_SERVICES: ServiceRecord[] = [
   {
     id: "fallback-dedicated-smtp",
     slug: "dedicated-smtp",
@@ -240,7 +240,7 @@ const FALLBACK_SERVICES: ServiceRecord[] = [
   },
 ];
 
-function fromDoc(id: string, data: Record<string, unknown>): ServiceRecord {
+export function serviceFromDoc(id: string, data: Record<string, unknown>): ServiceRecord {
   return {
     id,
     slug: String(data.slug ?? ""),
@@ -275,7 +275,7 @@ export async function listServices(): Promise<ServiceRecord[]> {
   try {
     const snap = await getDocs(query(collection(db, SERVICES_COLLECTION), orderBy("order")));
     if (snap.empty) return FALLBACK_SERVICES;
-    return snap.docs.map((d) => fromDoc(d.id, d.data()));
+    return snap.docs.map((d) => serviceFromDoc(d.id, d.data()));
   } catch (err) {
     console.error("listServices failed, using fallback content:", err);
     return FALLBACK_SERVICES;
@@ -287,7 +287,7 @@ export async function getServiceBySlug(slug: string): Promise<ServiceRecord | nu
     const q = query(collection(db, SERVICES_COLLECTION), where("slug", "==", slug), limit(1));
     const snap = await getDocs(q);
     if (snap.empty) return FALLBACK_SERVICES.find((s) => s.slug === slug) ?? null;
-    return fromDoc(snap.docs[0].id, snap.docs[0].data());
+    return serviceFromDoc(snap.docs[0].id, snap.docs[0].data());
   } catch (err) {
     console.error("getServiceBySlug failed, using fallback content:", err);
     return FALLBACK_SERVICES.find((s) => s.slug === slug) ?? null;

@@ -1,16 +1,15 @@
 import type { MetadataRoute } from "next";
 import { domain } from "@/content/site-settings";
-import { listServices } from "@/lib/services-content";
-import { listPublishedPosts } from "@/lib/blog";
+import { getPublishedPostSummaries, getServices } from "@/lib/public-data";
 
 const siteUrl = `https://${domain}`;
 
 // Same reasoning as the blog pages themselves — without this, newly
 // published (or unpublished) posts never reach sitemap.xml until a redeploy.
-export const revalidate = 60;
+export const revalidate = 300;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [posts, services] = await Promise.all([listPublishedPosts(), listServices()]);
+  const [posts, services] = await Promise.all([getPublishedPostSummaries(), getServices()]);
 
   const routes = [
     "",

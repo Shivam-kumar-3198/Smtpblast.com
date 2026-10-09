@@ -6,13 +6,14 @@ import { Nav } from "@/components/marketing/Nav";
 import { Footer } from "@/components/marketing/Footer";
 import { Reveal } from "@/components/marketing/Reveal";
 import { SectionEyebrow } from "@/components/marketing/SectionEyebrow";
-import { listPublishedPosts } from "@/lib/blog";
-import { estimateReadTime } from "@/lib/blog-content";
+import { getPublishedPostSummaries } from "@/lib/public-data";
+import { formatReadMinutes } from "@/lib/blog-content";
 
 // Without this the page is fully static (Firestore reads aren't visible to
 // Next's cache heuristics), so a post published in the admin would never
-// appear here until the next full deploy.
-export const revalidate = 60;
+// appear here until the next full deploy. 300s matches the data cache
+// window in lib/public-data.ts.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -27,7 +28,7 @@ function formatDate(date: Date | null) {
 }
 
 export default async function BlogPage() {
-  const posts = await listPublishedPosts();
+  const posts = await getPublishedPostSummaries();
   const [featured, ...rest] = posts;
 
   return (
@@ -91,7 +92,7 @@ export default async function BlogPage() {
                       <span aria-hidden>·</span>
                       <span>{formatDate(featured.publishedAt)}</span>
                       <span aria-hidden>·</span>
-                      <span>{estimateReadTime(featured.content)}</span>
+                      <span>{formatReadMinutes(featured.readingMinutes)}</span>
                     </div>
                   </div>
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-accent-600 lg:pr-2">
@@ -135,7 +136,7 @@ export default async function BlogPage() {
                       <div className="mt-auto flex items-center gap-2 pt-5 text-small text-slate-400">
                         <span>{formatDate(post.publishedAt)}</span>
                         <span aria-hidden>·</span>
-                        <span>{estimateReadTime(post.content)}</span>
+                        <span>{formatReadMinutes(post.readingMinutes)}</span>
                       </div>
                     </div>
                   </Link>

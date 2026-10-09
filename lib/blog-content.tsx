@@ -35,10 +35,17 @@ function nodeText(node: TiptapNode): string {
 
 /** ~200 wpm, rounded up to the nearest minute, minimum 1 — computed from
  * the actual document rather than a hand-typed field that can go stale. */
-export function estimateReadTime(doc: TiptapDoc): string {
+export function estimateReadMinutes(doc: TiptapDoc): number {
   const text = (doc.content ?? []).map(nodeText).join(" ").trim();
   const words = text ? text.split(/\s+/).length : 0;
-  const minutes = Math.max(1, Math.round(words / 200));
+  return Math.max(1, Math.round(words / 200));
+}
+
+export function estimateReadTime(doc: TiptapDoc): string {
+  return formatReadMinutes(estimateReadMinutes(doc));
+}
+
+export function formatReadMinutes(minutes: number): string {
   return `${minutes} min read`;
 }
 
