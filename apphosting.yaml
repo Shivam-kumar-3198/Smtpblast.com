@@ -1,4 +1,26 @@
 # Firebase App Hosting build & runtime config for the Next.js app.
+# Cloud Run runtime settings for the backend. Tuned for cost: the public
+# site is mostly cached/ISR output, so it needs little compute.
+runConfig:
+  # Scale to zero when idle so a quiet site costs nothing. Trade-off: the
+  # first request after idle pays a cold start (~1-3s). Raise to 1 only if
+  # that latency matters more than the always-on instance cost.
+  minInstances: 0
+  # Hard ceiling on scale-out. Caps the bill during a traffic spike or
+  # bot/abuse flood (each extra instance also re-reads Firestore once per
+  # cache window), at the cost of queueing/429s beyond ~3 x concurrency.
+  maxInstances: 3
+  # vCPUs per instance. 1 is plenty for rendering cached pages; the image
+  # optimizer is the only CPU-heavy path.
+  cpu: 1
+  # Memory per instance. 512 MiB fits Next.js + the Firebase SDK and the
+  # largest cached payloads (each kept well under 2 MB) with headroom.
+  memoryMiB: 512
+  # Concurrent requests one instance serves before another is started.
+  # Mostly I/O-bound rendering, so 80 (the Cloud Run default) keeps the
+  # instance count - and cost - low.
+  concurrency: 80
+
 # NEXT_PUBLIC_* values are inlined into the client bundle at build time by
 # Next.js, so they must be present during BUILD (not just RUNTIME) or the
 # deployed app ships with an unconfigured Firebase client SDK. These are
