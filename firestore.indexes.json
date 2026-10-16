@@ -9,5 +9,12 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    { "collectionGroup": "posts", "fieldPath": "content", "indexes": [] },
+    { "collectionGroup": "posts", "fieldPath": "faq", "indexes": [] },
+    { "collectionGroup": "posts", "fieldPath": "links", "indexes": [] },
+    { "collectionGroup": "posts", "fieldPath": "seo", "indexes": [] },
+    { "collectionGroup": "posts", "fieldPath": "featuredImage", "indexes": [] },
+    { "collectionGroup": "leads", "fieldPath": "message", "indexes": [] }
+  ]
 }

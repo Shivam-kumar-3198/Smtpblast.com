@@ -495,11 +495,14 @@ export async function listPublishedPosts(): Promise<PostRecord[]> {
   }
 }
 
+// Caps the admin list: each post doc carries a full Tiptap body.
+const ADMIN_POSTS_LIMIT = 100;
+
 export function subscribeToAllPosts(
   onData: (posts: PostRecord[]) => void,
   onError?: (error: Error) => void
 ) {
-  const q = query(collection(db, POSTS_COLLECTION), orderBy("updatedAt", "desc"));
+  const q = query(collection(db, POSTS_COLLECTION), orderBy("updatedAt", "desc"), limit(ADMIN_POSTS_LIMIT));
   return onSnapshot(
     q,
     (snap) => onData(snap.docs.map((d) => postFromSnapshot(d.id, d.data()))),

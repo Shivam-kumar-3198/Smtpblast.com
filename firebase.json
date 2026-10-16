@@ -5,9 +5,5 @@
   },
   "storage": {
     "rules": "storage.rules"
-  },
-  "hosting": {
-    "source": ".",
-    "ignore": ["firebase.json", "**/.git/**", "**/node_modules/**"]
   }
 }

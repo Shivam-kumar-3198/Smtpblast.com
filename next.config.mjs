@@ -20,7 +20,12 @@ const nextConfig = {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
   images: {
-    formats: ["image/avif", "image/webp"],
+    // WebP only: AVIF encoding is several times more CPU per image, which on
+    // a 1-vCPU scale-to-zero Cloud Run instance is the main image cost.
+    formats: ["image/webp"],
+    // Optimized variants are cached for 30 days (default is 60s), so each
+    // image is resized once instead of on nearly every cold instance.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     // Blog/service images are pasted in as external links (any host — admins
     // can point at ImageKit, Firebase Storage, or any other CDN) rather than
     // uploaded — next/image throws for any host not listed here, which
@@ -64,7 +69,14 @@ const nextConfig = {
       "frame-src 'self' https://*.firebaseapp.com",
     ].join("; ");
 
+    // Files in public/ are served with max-age=0 by default, so every visit
+    // revalidates them. Names aren't content-hashed, so keep the browser TTL
+    // modest and let the CDN hold them for a month.
+    const staticAssetCache = "public, max-age=86400, s-maxage=2592000, stale-while-revalidate=604800";
+
     return [
+      { source: "/images/:path*", headers: [{ key: "Cache-Control", value: staticAssetCache }] },
+      { source: "/smtpblast-logo.webp", headers: [{ key: "Cache-Control", value: staticAssetCache }] },
       {
         source: "/:path*",
         headers: [

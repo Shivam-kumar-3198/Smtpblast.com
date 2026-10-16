@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import {
   deleteLead,
+  countLeads,
   subscribeToLeads,
   updateLeadStatus,
   type LeadRecord,
@@ -84,6 +85,7 @@ function toCsv(leads: LeadRecord[]): string {
 export default function AdminDashboardPage() {
   const [leads, setLeads] = useState<LeadRecord[] | null>(null);
   const [error, setError] = useState("");
+  const [totalCount, setTotalCount] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
 
@@ -92,6 +94,7 @@ export default function AdminDashboardPage() {
       (data) => setLeads(data),
       () => setError("Couldn't load leads. Check your connection and try again.")
     );
+    countLeads().then(setTotalCount).catch(() => setTotalCount(null));
     return () => unsubscribe();
   }, []);
 
@@ -99,12 +102,12 @@ export default function AdminDashboardPage() {
     const list = leads ?? [];
     const now = new Date();
     return {
-      total: list.length,
+      total: Math.max(totalCount ?? 0, list.length),
       new: list.filter((l) => l.status === "new").length,
       today: list.filter((l) => l.createdAt && isSameDay(l.createdAt, now)).length,
       thisWeek: list.filter((l) => l.createdAt && isWithinDays(l.createdAt, 7)).length,
     };
-  }, [leads]);
+  }, [leads, totalCount]);
 
   const filteredLeads = useMemo(() => {
     const list = leads ?? [];

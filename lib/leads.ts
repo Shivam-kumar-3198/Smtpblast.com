@@ -3,6 +3,8 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -32,6 +34,10 @@ export interface LeadRecord {
 }
 
 const LEADS_COLLECTION = "leads";
+// Admin list window. Billing is per document read, so the dashboard never
+// loads the whole collection; older leads stay in Firestore and the total
+// is read via a count aggregation (1 read per 1,000 index entries).
+export const LEADS_PAGE_SIZE = 200;
 const SUBMIT_COOLDOWN_MS = 30_000;
 const LAST_SUBMIT_KEY = "smtpblast_last_lead_submit";
 
@@ -103,7 +109,7 @@ export function subscribeToLeads(
   onData: (leads: LeadRecord[]) => void,
   onError?: (error: Error) => void
 ) {
-  const q = query(collection(db, LEADS_COLLECTION), orderBy("createdAt", "desc"));
+  const q = query(collection(db, LEADS_COLLECTION), orderBy("createdAt", "desc"), limit(LEADS_PAGE_SIZE));
   return onSnapshot(
     q,
     (snapshot) => {
@@ -126,6 +132,12 @@ export function subscribeToLeads(
     },
     onError
   );
+}
+
+/** Total lead count without downloading any documents. */
+export async function countLeads(): Promise<number> {
+  const snap = await getCountFromServer(query(collection(db, LEADS_COLLECTION)));
+  return snap.data().count;
 }
 
 export function updateLeadStatus(id: string, status: LeadStatus) {
